@@ -17,6 +17,58 @@ class LifecycleCheckerTests(unittest.TestCase):
         rule_ids = {rule["id"] for rule in MODULE.load_rules()}
         self.assertEqual(rule_ids, set(MODULE.build_rule_checkers(MODULE.load_rules())))
 
+    def test_pass_when_common_baseline_and_acceptance_flow_exist(self):
+        payload = {
+            "branch": "design/acceptance-protocol",
+            "shared_files_declared": True,
+            "task_card_present": True,
+            "comments": ["ACCEPTANCE_REQUEST", "VALIDATION_RESULT"],
+            "acceptance_request_present": True,
+            "validation_result_present": True,
+            "validation_decision": "ACCEPTED",
+        }
+
+        result = MODULE.evaluate_payload(payload)
+
+        self.assertEqual(result["decision"], "PASS")
+        self.assertEqual(result["reason_codes"], [])
+
+    def test_block_when_acceptance_request_exists_without_validation_result(self):
+        payload = {
+            "branch": "design/acceptance-protocol",
+            "shared_files_declared": True,
+            "task_card_present": True,
+            "comments": ["ACCEPTANCE_REQUEST"],
+            "acceptance_request_present": True,
+            "validation_result_present": False,
+            "validation_decision": "",
+        }
+
+        result = MODULE.evaluate_payload(payload)
+
+        self.assertEqual(result["decision"], "BLOCK")
+        self.assertIn("RULE_VALIDATION_RESULT_REQUIRED", result["reason_codes"])
+
+    def test_pass_when_legacy_flow_still_has_all_required_evidence(self):
+        payload = {
+            "branch": "agent/solo/lifecycle-docs",
+            "shared_files_declared": True,
+            "task_card_present": True,
+            "design_review_present": True,
+            "test_report_present": True,
+            "non_owner_review_present": True,
+            "scope_changed": False,
+            "execution_blocked": False,
+            "comments": ["STARTED", "DONE"],
+            "acceptance_request_present": False,
+            "validation_result_present": False,
+            "validation_decision": "",
+        }
+
+        result = MODULE.evaluate_payload(payload)
+
+        self.assertEqual(result["decision"], "PASS")
+
     def test_pass_when_all_required_evidence_exists(self):
         payload = {
             "branch": "agent/solo/lifecycle-docs",
