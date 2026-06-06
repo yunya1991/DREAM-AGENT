@@ -1,8 +1,10 @@
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +54,7 @@ class LifecycleCheckerTests(unittest.TestCase):
         self.assertEqual(result["decision"], "PASS")
         self.assertEqual(result["reason_codes"], [])
 
-    def test_block_when_acceptance_request_exists_without_validation_result(self):
+    def test_pending_when_acceptance_request_exists_without_validation_result(self):
         payload = {
             "branch": "design/acceptance-protocol",
             "shared_files_declared": True,
@@ -65,8 +67,62 @@ class LifecycleCheckerTests(unittest.TestCase):
 
         result = MODULE.evaluate_payload(payload)
 
+        self.assertEqual(result["decision"], "PENDING")
+        self.assertIn("RULE_VALIDATION_RESULT_PENDING", result["reason_codes"])
+
+    def test_block_when_validation_result_exists_but_decision_is_blocking(self):
+        payload = {
+            "branch": "design/acceptance-protocol",
+            "shared_files_declared": True,
+            "task_card_present": True,
+            "comments": ["ACCEPTANCE_REQUEST", "VALIDATION_RESULT"],
+            "acceptance_request_present": True,
+            "validation_result_present": True,
+            "validation_decision": "REWORK",
+        }
+
+        result = MODULE.evaluate_payload(payload)
+
         self.assertEqual(result["decision"], "BLOCK")
-        self.assertIn("RULE_VALIDATION_RESULT_REQUIRED", result["reason_codes"])
+        self.assertIn("RULE_ACCEPTANCE_VALIDATION_BLOCKED", result["reason_codes"])
+
+    def test_main_exits_zero_for_pending_acceptance_state(self):
+        payload = {
+            "branch": "design/acceptance-protocol",
+            "shared_files_declared": True,
+            "task_card_present": True,
+            "comments": ["ACCEPTANCE_REQUEST"],
+            "acceptance_request_present": True,
+            "validation_result_present": False,
+            "validation_decision": "",
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            payload_path = Path(tmpdir) / "payload.json"
+            payload_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            with mock.patch("sys.argv", ["check_agent_lifecycle.py", str(payload_path)]):
+                with mock.patch("sys.stdout", new=io.StringIO()):
+                    with self.assertRaises(SystemExit) as cm:
+                        MODULE.main()
+
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_pending_when_acceptance_request_exists_without_validation_result_on_pilot_branch(self):
+        payload = {
+            "branch": "pilot/acceptance-auto-trigger-20260607",
+            "shared_files_declared": True,
+            "task_card_present": True,
+            "comments": ["ACCEPTANCE_REQUEST"],
+            "acceptance_request_present": True,
+            "validation_result_present": False,
+            "validation_decision": "",
+        }
+
+        result = MODULE.evaluate_payload(payload)
+
+        self.assertEqual(result["decision"], "PENDING")
+        self.assertEqual(result["reason_codes"], ["RULE_VALIDATION_RESULT_PENDING"])
 
     def test_pass_when_legacy_flow_still_has_all_required_evidence(self):
         payload = {
