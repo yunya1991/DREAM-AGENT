@@ -201,5 +201,47 @@ class BuildLifecyclePayloadTests(unittest.TestCase):
 
         self.assertEqual(payload["execution_mode"], "STANDARD")
         self.assertTrue(payload["direct_takeover"])
+
+    def test_acceptance_request_comment_is_recognized_as_structured_status(self):
+        raw = {
+            "branch": "design/acceptance-protocol",
+            "pr_body": "## Owner Agent\nOwner Agent: SOLO\n",
+            "comments": [
+                "[验收委托 / ACCEPTANCE_REQUEST]\n\n"
+                "Acceptance Request ID: ar-20260607-002\n"
+                "Request Type: phase-gate\n"
+                "Request Mode: manual\n"
+                "Source of Truth: PR comment\n"
+                "Target PR: #5\n\n"
+                "## 验收对象\n"
+                "- acceptance protocol v1\n"
+            ],
+        }
+
+        payload = MODULE.build_payload(raw)
+
+        self.assertIn("ACCEPTANCE_REQUEST", payload["comments"])
+        self.assertTrue(payload["acceptance_request_present"])
+        self.assertEqual(payload["acceptance_request_id"], "ar-20260607-002")
+
+    def test_validation_result_comment_extracts_decision_and_mode(self):
+        raw = {
+            "branch": "design/acceptance-protocol",
+            "pr_body": "## Owner Agent\nOwner Agent: SOLO\n",
+            "comments": [
+                "[验证结论 / VALIDATION_RESULT]\n\n"
+                "Validator: manual-pilot\n"
+                "Validation Mode: acceptance\n"
+                "Acceptance Request ID: ar-20260607-002\n"
+                "Decision: ACCEPTED\n"
+            ],
+        }
+
+        payload = MODULE.build_payload(raw)
+
+        self.assertIn("VALIDATION_RESULT", payload["comments"])
+        self.assertTrue(payload["validation_result_present"])
+        self.assertEqual(payload["validation_mode"], "acceptance")
+        self.assertEqual(payload["validation_decision"], "ACCEPTED")
 if __name__ == "__main__":
     unittest.main()
