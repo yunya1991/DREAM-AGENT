@@ -45,22 +45,27 @@ jobs:
         id: inputs
         env:
           GH_TOKEN: ${{ github.token }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "pr_number=${{ inputs.pr_number }}" >> "$GITHUB_OUTPUT"
             echo "acceptance_request_id=${{ inputs.acceptance_request_id }}" >> "$GITHUB_OUTPUT"
           else
-            echo "pr_number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
             python3 - <<'PY'
+            import importlib.util
             import os
-            import re
+            import pathlib
 
-            comment = os.environ.get("COMMENT_BODY", "")
-            match = re.search(r"Acceptance Request ID:\s*(.+)", comment)
-            request_id = match.group(1).strip() if match else ""
+            root = pathlib.Path.cwd()
+            module_path = root / "github-actions" / "resolve_acceptance_inputs.py"
+            spec = importlib.util.spec_from_file_location("resolve_acceptance_inputs", module_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            result = module.resolve_issue_comment_event_path(pathlib.Path(os.environ["GITHUB_EVENT_PATH"]))
             with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"acceptance_request_id={request_id}\n")
+              fh.write(f"pr_number={result['pr_number']}\n")
+              fh.write(f"acceptance_request_id={result['acceptance_request_id']}\n")
             PY
           fi
 
