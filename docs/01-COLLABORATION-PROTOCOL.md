@@ -37,6 +37,7 @@ Structured PR comments are the canonical collaboration interface.
 - `[协作阻塞通知 / BLOCKED]`
 - `[方案评审记录 / DESIGN_REVIEW]`
 - `[测试报告 / TEST_REPORT]`
+- `[验收委托 / ACCEPTANCE_REQUEST]`
 - `[验证结论 / VALIDATION_RESULT]`
 - `[协作完成回报 / DONE]`
 - `[账本同步 / LEDGER_SYNC]` ⭐ new — posted by CLI or GitHub Action when ledger/workspace state changes
@@ -130,13 +131,32 @@ Templates live in `templates/`.
 - `Score: <0-100>`
 - `Governance Handoff: ledgered | archived | pending`
 
-### 2.5 DONE
+### 2.5 ACCEPTANCE_REQUEST
+
+- `Acceptance Request ID`
+- `Request Type`
+- `Request Mode`
+- `Source of Truth`
+- `Target PR`
+- `验收对象`
+- `验收范围`
+- `业务上下文映射`
+- `重点验收项`
+- `本轮不要求`
+- `期望回写格式`
+
+Notes:
+
+- `DONE != ACCEPTED`
+- `DONE` means delivery is complete; `VALIDATION_RESULT` is the acceptance conclusion.
+
+### 2.6 DONE
 
 - `Agent: <agent_id>`
 - `提交: <commit sha>`
 - Delivery summary
 
-### 2.6 LEDGER_SYNC (new)
+### 2.7 LEDGER_SYNC (new)
 
 - `Sync Agent: CLI | GitHub Action`
 - `Protocol File: <path to LEDGER-YYYYMMDD.md>`

@@ -126,9 +126,12 @@ created_at: 2026-05-20
 6. If scope changes, post `UPDATED` first.
 7. If ledger/task status changes, run `ledger_sync.py push-status` and post `LEDGER_SYNC`.
 8. Post `TEST_REPORT` with evidence.
-9. Validator posts `VALIDATION_RESULT` with score and decision.
-10. Post `DONE` with delivery summary.
-11. Governance AGENT merges after all gates pass.
+9. Post `DONE` with delivery summary.
+10. If a task needs acceptance, post `ACCEPTANCE_REQUEST` after the delivery package is ready.
+11. Validator posts `VALIDATION_RESULT` with score and decision.
+12. Before continuing the next round of work, 先读取最近一次 `VALIDATION_RESULT`.
+13. If `REWORK`, `BLOCK`, or `Must-Fix Items` exist, fix them before continuing mainline work.
+14. Governance AGENT merges after all gates pass.
 
 ## 3. Role-Specific Norms
 

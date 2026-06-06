@@ -89,5 +89,17 @@ class AcceptanceRequestParserTests(unittest.TestCase):
         self.assertIn("RULE_ACCEPTANCE_ANCHOR_MISSING", result["reason_codes"])
 
 
+class AcceptanceProtocolDocsTests(unittest.TestCase):
+    def test_collaboration_protocol_mentions_acceptance_request_anchor(self):
+        text = (ROOT / "docs" / "01-COLLABORATION-PROTOCOL.md").read_text(encoding="utf-8")
+        self.assertIn("[验收委托 / ACCEPTANCE_REQUEST]", text)
+        self.assertIn("DONE != ACCEPTED", text)
+
+    def test_workflow_norms_mentions_precheck_rule(self):
+        text = (ROOT / "docs" / "03-WORKFLOWS-AND-NORMS.md").read_text(encoding="utf-8")
+        self.assertIn("先读取最近一次 `VALIDATION_RESULT`", text)
+        self.assertIn("ACCEPTANCE_REQUEST", text)
+
+
 if __name__ == "__main__":
     unittest.main()
