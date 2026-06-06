@@ -17,6 +17,25 @@ class LifecycleCheckerTests(unittest.TestCase):
         rule_ids = {rule["id"] for rule in MODULE.load_rules()}
         self.assertEqual(rule_ids, set(MODULE.build_rule_checkers(MODULE.load_rules())))
 
+    def test_rule_catalog_keeps_shared_baseline_and_legacy_flow_metadata(self):
+        catalog = json.loads(MODULE.RULES_PATH.read_text(encoding="utf-8"))
+        checks_by_id = {rule["id"]: rule["check"] for rule in catalog["rules"]}
+
+        self.assertEqual(catalog["version"], "1.1")
+        self.assertEqual(checks_by_id["RULE_001_TASK_CARD_REQUIRED"], "task_card_present")
+        self.assertEqual(
+            checks_by_id["RULE_002_DESIGN_REVIEW_REQUIRED"],
+            "design_review_present_for_legacy_flow",
+        )
+        self.assertEqual(
+            checks_by_id["RULE_003_STARTED_REQUIRED"],
+            "started_comment_present_for_legacy_flow",
+        )
+        self.assertEqual(checks_by_id["RULE_009_BRANCH_POLICY_ENFORCED"], "branch_policy_valid")
+        self.assertEqual(
+            checks_by_id["RULE_010_SHARED_FILE_DECLARATION"], "shared_files_declared"
+        )
+
     def test_pass_when_common_baseline_and_acceptance_flow_exist(self):
         payload = {
             "branch": "design/acceptance-protocol",

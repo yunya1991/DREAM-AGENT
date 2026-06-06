@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "rules": [
     {
       "id": "RULE_001_TASK_CARD_REQUIRED",
@@ -10,13 +10,13 @@
     {
       "id": "RULE_002_DESIGN_REVIEW_REQUIRED",
       "severity": "block",
-      "check": "design_review_present",
+      "check": "design_review_present_for_legacy_flow",
       "checker": "check_design_review_present"
     },
     {
       "id": "RULE_003_STARTED_REQUIRED",
       "severity": "block",
-      "check": "started_comment_present",
+      "check": "started_comment_present_for_legacy_flow",
       "checker": "check_started_comment_present"
     },
     {
@@ -34,19 +34,19 @@
     {
       "id": "RULE_006_TEST_EVIDENCE_REQUIRED",
       "severity": "block",
-      "check": "test_report_present",
+      "check": "test_report_present_for_legacy_flow",
       "checker": "check_test_report_present"
     },
     {
       "id": "RULE_007_REVIEW_BY_NON_OWNER",
       "severity": "block",
-      "check": "non_owner_review_present",
+      "check": "non_owner_review_present_for_legacy_flow",
       "checker": "check_non_owner_review_present"
     },
     {
       "id": "RULE_008_DONE_REQUIRED",
       "severity": "block",
-      "check": "done_comment_present",
+      "check": "done_comment_present_for_legacy_flow",
       "checker": "check_done_comment_present"
     },
     {
