@@ -11,6 +11,8 @@ HEADER_TO_STATUS = {
     "[协作完成回报 / DONE]": "DONE",
     "[方案评审记录 / DESIGN_REVIEW]": "DESIGN_REVIEW",
     "[测试报告 / TEST_REPORT]": "TEST_REPORT",
+    "[验收委托 / ACCEPTANCE_REQUEST]": "ACCEPTANCE_REQUEST",
+    "[验证结论 / VALIDATION_RESULT]": "VALIDATION_RESULT",
 }
 
 
@@ -85,6 +87,9 @@ def parse_structured_comment(text):
                 "direct_takeover": detect_direct_takeover(text),
                 "occupied_paths": extract_bullets_after_label(text, "占用范围")
                 or extract_bullets_after_label(text, "当前占用范围"),
+                "acceptance_request_id": extract_field(text, "Acceptance Request ID"),
+                "validation_mode": extract_field(text, "Validation Mode"),
+                "validation_decision": extract_field(text, "Decision"),
             }
     return None
 
@@ -109,6 +114,22 @@ def build_payload(raw):
 
     started_comment = next(
         (comment for comment in structured_comments if comment["status"] == "STARTED"),
+        None,
+    )
+    acceptance_request_comment = next(
+        (
+            comment
+            for comment in structured_comments
+            if comment["status"] == "ACCEPTANCE_REQUEST"
+        ),
+        None,
+    )
+    validation_result_comment = next(
+        (
+            comment
+            for comment in structured_comments
+            if comment["status"] == "VALIDATION_RESULT"
+        ),
         None,
     )
 
@@ -162,6 +183,17 @@ def build_payload(raw):
         "block_declared": block_declared,
         "scope_changed": scope_change_declared,
         "execution_blocked": block_declared,
+        "acceptance_request_present": acceptance_request_comment is not None,
+        "acceptance_request_id": (
+            (acceptance_request_comment or {}).get("acceptance_request_id", "")
+        ),
+        "validation_result_present": validation_result_comment is not None,
+        "validation_mode": (
+            (validation_result_comment or {}).get("validation_mode", "").lower()
+        ),
+        "validation_decision": (
+            (validation_result_comment or {}).get("validation_decision", "").upper()
+        ),
         "comments": comments,
     }
 

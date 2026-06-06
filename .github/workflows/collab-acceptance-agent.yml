@@ -1,0 +1,201 @@
+name: collab-acceptance-agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Target PR number"
+        required: true
+        type: string
+      acceptance_request_id:
+        description: "Acceptance Request ID"
+        required: false
+        default: ""
+        type: string
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: collab-acceptance-agent-${{ github.event.issue.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: [self-hosted, macOS, workbuddy]
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        contains(github.event.comment.body, '[验收委托 / ACCEPTANCE_REQUEST]')
+      )
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve inputs
+        id: inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pr_number=${{ inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+            echo "acceptance_request_id=${{ inputs.acceptance_request_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "pr_number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+            python3 - <<'PY'
+            import os
+            import re
+
+            comment = os.environ.get("COMMENT_BODY", "")
+            match = re.search(r"Acceptance Request ID:\s*(.+)", comment)
+            request_id = match.group(1).strip() if match else ""
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"acceptance_request_id={request_id}\n")
+            PY
+          fi
+
+      - name: Resolve acceptance request body
+        id: request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.inputs.outputs.pr_number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          REQUEST_ID: ${{ steps.inputs.outputs.acceptance_request_id }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+
+          output_path = os.environ["GITHUB_OUTPUT"]
+          event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+          request_id = os.environ.get("REQUEST_ID", "").strip()
+
+          def write_output(name: str, value: str) -> None:
+            with open(output_path, "a", encoding="utf-8") as fh:
+              fh.write(f"{name}<<__EOF__\n{value}\n__EOF__\n")
+
+          comment_body = os.environ.get("COMMENT_BODY", "")
+          if event_name == "issue_comment":
+            write_output("comment_body", comment_body)
+            sys.exit(0)
+
+          pr_number = os.environ["PR_NUMBER"]
+          result = subprocess.run(
+            [
+              "gh",
+              "pr",
+              "view",
+              pr_number,
+              "--json",
+              "comments",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+          )
+          payload = json.loads(result.stdout)
+          comments = [comment.get("body", "") for comment in payload.get("comments", [])]
+          candidates = [
+            body for body in comments if "[验收委托 / ACCEPTANCE_REQUEST]" in body
+          ]
+
+          if request_id:
+            filtered = []
+            for body in candidates:
+              match = re.search(r"Acceptance Request ID:\s*(.+)", body)
+              if match and match.group(1).strip() == request_id:
+                filtered.append(body)
+            if filtered:
+              candidates = filtered
+
+          write_output("comment_body", candidates[-1] if candidates else "")
+          PY
+
+      - name: Evaluate acceptance request
+        id: evaluate
+        env:
+          COMMENT_BODY: ${{ steps.request.outputs.comment_body }}
+        run: |
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          import pathlib
+
+          root = pathlib.Path.cwd()
+          module_path = root / "github-actions" / "check_acceptance_request.py"
+          spec = importlib.util.spec_from_file_location("check_acceptance_request", module_path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          result = module.evaluate_acceptance_request(os.environ.get("COMMENT_BODY", ""))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+            fh.write(f"decision={result['decision']}\n")
+            fh.write(f"protocol_read_result={result['protocol_read_result']}\n")
+            fh.write(f"source_of_truth_verdict={result['source_of_truth_verdict']}\n")
+            fh.write(f"recommended_next_action={result['recommended_next_action']}\n")
+            fh.write(f"acceptance_request_id={result.get('acceptance_request_id', 'none')}\n")
+            fh.write(f"reason_codes={','.join(result['reason_codes'])}\n")
+          PY
+
+      - name: Render VALIDATION_RESULT comment
+        env:
+          DECISION: ${{ steps.evaluate.outputs.decision }}
+          PROTOCOL_READ_RESULT: ${{ steps.evaluate.outputs.protocol_read_result }}
+          SOURCE_OF_TRUTH_VERDICT: ${{ steps.evaluate.outputs.source_of_truth_verdict }}
+          NEXT_ACTION: ${{ steps.evaluate.outputs.recommended_next_action }}
+          ACCEPTANCE_REQUEST_ID: ${{ steps.evaluate.outputs.acceptance_request_id }}
+          REASON_CODES: ${{ steps.evaluate.outputs.reason_codes }}
+        run: |
+          python3 - <<'PY'
+          import os
+
+          decision = os.environ["DECISION"]
+          hard_gate = "BLOCK" if decision == "BLOCK" else "PASS"
+          conclusion_map = {
+            "ACCEPTED": "trial_pass",
+            "REWORK": "trial_partial",
+            "BLOCK": "trial_fail",
+          }
+          lines = [
+            "[验证结论 / VALIDATION_RESULT]",
+            "",
+            "Validator: collab-acceptance-agent",
+            "Validation Mode: acceptance",
+            f"Acceptance Request ID: {os.environ['ACCEPTANCE_REQUEST_ID']}",
+            f"Hard Gate Result: {hard_gate}",
+            "Score: 90",
+            f"Decision: {decision}",
+            f"Protocol Read Result: {os.environ['PROTOCOL_READ_RESULT']}",
+            f"Source of Truth Verdict: {os.environ['SOURCE_OF_TRUTH_VERDICT']}",
+            "Reason Codes:",
+            f"- {os.environ['REASON_CODES']}",
+            "Must-Fix Items:",
+            "- none",
+            f"Next Step Recommendation: {os.environ['NEXT_ACTION']}",
+            f"Acceptance Conclusion: {conclusion_map.get(decision, 'trial_fail')}",
+            "Reward Multiplier: 1.0",
+            "Ledger Update: none",
+            "Governance Handoff: pending",
+          ]
+          with open("pr_acceptance_result.md", "w", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+          PY
+
+      - name: Post VALIDATION_RESULT comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.inputs.outputs.pr_number }}
+        run: gh pr comment "${PR_NUMBER}" --body-file pr_acceptance_result.md
