@@ -51,22 +51,7 @@ jobs:
             echo "pr_number=${{ inputs.pr_number }}" >> "$GITHUB_OUTPUT"
             echo "acceptance_request_id=${{ inputs.acceptance_request_id }}" >> "$GITHUB_OUTPUT"
           else
-            python3 - <<'PY'
-            import importlib.util
-            import os
-            import pathlib
-
-            root = pathlib.Path.cwd()
-            module_path = root / "github-actions" / "resolve_acceptance_inputs.py"
-            spec = importlib.util.spec_from_file_location("resolve_acceptance_inputs", module_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-
-            result = module.resolve_issue_comment_event_path(pathlib.Path(os.environ["GITHUB_EVENT_PATH"]))
-            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"pr_number={result['pr_number']}\n")
-              fh.write(f"acceptance_request_id={result['acceptance_request_id']}\n")
-            PY
+            python3 github-actions/resolve_acceptance_inputs.py
           fi
 
       - name: Resolve acceptance request body

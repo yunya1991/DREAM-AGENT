@@ -1,8 +1,11 @@
 import importlib.util
+import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -60,6 +63,36 @@ class ResolveAcceptanceInputsTests(unittest.TestCase):
         self.assertEqual(result["pr_number"], "8")
         self.assertEqual(result["acceptance_request_id"], "ar-20260607-008")
         self.assertIn("[验收委托 / ACCEPTANCE_REQUEST]", result["comment_body"])
+
+    def test_main_writes_outputs_from_github_event_path(self):
+        event = {
+            "issue": {
+                "number": 9,
+                "pull_request": {"url": "https://api.github.com/repos/yunya1991/DREAM-AGENT/pulls/9"},
+            },
+            "comment": {"body": COMMENT_BODY.replace("ar-20260607-003", "ar-20260607-009")},
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            event_path = Path(tmpdir) / "event.json"
+            output_path = Path(tmpdir) / "github_output.txt"
+            event_path.write_text(json.dumps(event), encoding="utf-8")
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "GITHUB_EVENT_PATH": str(event_path),
+                    "GITHUB_OUTPUT": str(output_path),
+                },
+                clear=False,
+            ):
+                with mock.patch("sys.stdout", new=io.StringIO()):
+                    MODULE.main()
+
+            output = output_path.read_text(encoding="utf-8")
+
+        self.assertIn("pr_number=9", output)
+        self.assertIn("acceptance_request_id=ar-20260607-009", output)
 
 
 if __name__ == "__main__":

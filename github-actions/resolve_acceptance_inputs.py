@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from pathlib import Path
 
@@ -20,3 +21,14 @@ def resolve_issue_comment_event(event: dict) -> dict:
 def resolve_issue_comment_event_path(event_path: Path) -> dict:
     event = json.loads(event_path.read_text(encoding="utf-8"))
     return resolve_issue_comment_event(event)
+
+
+def main() -> None:
+    result = resolve_issue_comment_event_path(Path(os.environ["GITHUB_EVENT_PATH"]))
+    with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+        fh.write(f"pr_number={result['pr_number']}\n")
+        fh.write(f"acceptance_request_id={result['acceptance_request_id']}\n")
+
+
+if __name__ == "__main__":
+    main()
