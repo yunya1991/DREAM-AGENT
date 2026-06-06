@@ -20,5 +20,18 @@ class AcceptanceRequestTemplateTests(unittest.TestCase):
         self.assertIn("## 期望回写格式", text)
 
 
+class ValidationResultTemplateTests(unittest.TestCase):
+    def test_validation_result_template_supports_acceptance_mode_fields(self):
+        template = ROOT / "templates" / "pr-comment-validation-result.md"
+        text = template.read_text(encoding="utf-8")
+        self.assertIn("Validation Mode:", text)
+        self.assertIn("Acceptance Request ID:", text)
+        self.assertIn("Protocol Read Result:", text)
+        self.assertIn("Source of Truth Verdict:", text)
+        self.assertIn("Must-Fix Items:", text)
+        self.assertIn("Next Step Recommendation:", text)
+        self.assertIn("Acceptance Conclusion:", text)
+
+
 if __name__ == "__main__":
     unittest.main()
