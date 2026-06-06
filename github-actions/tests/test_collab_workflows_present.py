@@ -17,5 +17,11 @@ class CollabWorkflowPresenceTests(unittest.TestCase):
             self.assertTrue((workflows / name).exists(), str(workflows / name))
 
 
+class AcceptanceWorkflowPresenceTests(unittest.TestCase):
+    def test_acceptance_workflow_exists(self):
+        workflow = REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        self.assertTrue(workflow.exists(), str(workflow))
+
+
 if __name__ == "__main__":
     unittest.main()
