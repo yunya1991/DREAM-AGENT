@@ -304,7 +304,7 @@ jobs:
               "approval_code": approval_code,
               "user_id": applicant_open_id,
               "instance_external_id": f"smoke-{os.environ['GITHUB_RUN_ID']}",
-              "form": [],
+              "form": json.dumps([]),
           }
           created = request_json(
               "https://open.feishu.cn/open-apis/approval/v4/instances",
@@ -318,7 +318,7 @@ jobs:
           print("Definition response saved to approval_definition.json")
           print("Create response saved to approval_instance_create.json")
           print(json.dumps(created, ensure_ascii=False))
-          if created.get("code") not in (None, 0):
+          if created.get("http_status") or created.get("code") not in (0, None):
               raise SystemExit(1)
           PY
 

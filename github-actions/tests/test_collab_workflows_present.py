@@ -81,6 +81,19 @@ class AcceptanceWorkflowContractTests(unittest.TestCase):
         self.assertIn("approval_definition.json", text)
         self.assertIn("approval_instance_create.json", text)
 
+    def test_approval_smoke_serializes_form_as_json_string(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn('"form": json.dumps([])', text)
+        self.assertNotIn('"form": [],', text)
+
+    def test_approval_smoke_fails_on_http_errors(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn('if created.get("http_status") or created.get("code") not in (0, None):', text)
+
 
 if __name__ == "__main__":
     unittest.main()
