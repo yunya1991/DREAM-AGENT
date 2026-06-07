@@ -39,6 +39,7 @@ See `agent-efficient-collaboration-mode.md` and `agent-ledger-protocol-vs-govern
 - `github-feishu-integration-handbook.md` (接入规范)
 - `github-feishu-troubleshooting.md` (故障排查手册)
 - `github-feishu-e2e-case-index.md` (真实 E2E 案例索引)
+- `github-feishu-new-base-e2e-runbook.md` (新 Base 接入真实 E2E 执行清单)
 - `github-feishu-okr-knowledgebase-design.md` (OKR 与知识库建设设计)
 
 ## 4. Migration Notes

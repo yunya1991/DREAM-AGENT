@@ -138,6 +138,7 @@ OKR 接入分两层：
 - `work_item_title` 空值问题已修复
 - OKR 评论渲染逻辑已具备，但仍受真实数据与权限状态约束
 - 飞书知识库入口文档已开始建立
+- 新 Base 接入真实 E2E 的执行清单已单独整理为 `docs/github-feishu-new-base-e2e-runbook.md`
 
 ## 10. 主线优先级
 

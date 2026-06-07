@@ -61,6 +61,7 @@ last_verified: 2026-06-07
 - 接入规范：`docs/github-feishu-integration-handbook.md`
 - 故障手册：`docs/github-feishu-troubleshooting.md`
 - E2E 案例索引：`docs/github-feishu-e2e-case-index.md`
+- 新 Base 执行清单：`docs/github-feishu-new-base-e2e-runbook.md`
 - 设计总览：`docs/github-feishu-okr-knowledgebase-design.md`
 
 ## 3. Gate Evidence Checklist (Where to Look)
