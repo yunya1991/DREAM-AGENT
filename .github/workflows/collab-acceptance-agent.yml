@@ -302,7 +302,7 @@ jobs:
 
           create_body = {
               "approval_code": approval_code,
-              "user_id": applicant_open_id,
+              "open_id": applicant_open_id,
               "instance_external_id": f"smoke-{os.environ['GITHUB_RUN_ID']}",
               "form": json.dumps([]),
           }

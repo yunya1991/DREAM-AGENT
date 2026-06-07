@@ -94,6 +94,13 @@ class AcceptanceWorkflowContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn('if created.get("http_status") or created.get("code") not in (0, None):', text)
 
+    def test_approval_smoke_uses_open_id_for_applicant(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn('"open_id": applicant_open_id,', text)
+        self.assertNotIn('"user_id": applicant_open_id,', text)
+
 
 if __name__ == "__main__":
     unittest.main()
