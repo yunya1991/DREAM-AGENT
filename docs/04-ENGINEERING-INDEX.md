@@ -6,15 +6,15 @@ depends:
   - 00-AGENT-CONSTITUTION
   - 01-COLLABORATION-PROTOCOL
   - 02-ARCHITECTURE
-version: 3
-last_verified: 2026-05-20
+version: 4
+last_verified: 2026-06-07
 ---
 
 # Engineering Index
 
 > Status: active  
 > Purpose: quickly locate the correct file to change  
-> Last updated: 2026-05-20
+> Last updated: 2026-06-07
 
 ## 1. Directories
 
@@ -55,6 +55,13 @@ last_verified: 2026-05-20
 
 - behavior: `SKILLS/dual-agent-conflict-gate/conflict_gate.py`
 - boundaries & contracts: `SKILLS/dual-agent-conflict-gate/gatekeeper_config.json`
+
+### 2.6 GitHub x 飞书接入 / 排障 / 案例
+
+- 接入规范：`docs/github-feishu-integration-handbook.md`
+- 故障手册：`docs/github-feishu-troubleshooting.md`
+- E2E 案例索引：`docs/github-feishu-e2e-case-index.md`
+- 设计总览：`docs/github-feishu-okr-knowledgebase-design.md`
 
 ## 3. Gate Evidence Checklist (Where to Look)
 

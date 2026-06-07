@@ -32,8 +32,16 @@ See `agent-efficient-collaboration-mode.md` and `agent-ledger-protocol-vs-govern
 - [agent-collaboration-system-v1-governance-cycle-implementation-plan.md](agent-collaboration-system-v1-governance-cycle-implementation-plan.md)
 - `self-hosted-runner.md` (trialed on PR9)
 - `dual-agent-collaboration-foundation-design.md` (legacy subset reference)
+- `github-feishu-okr-knowledgebase-design.md`
 
-## 3. Migration Notes
+## 3. GitHub x 飞书协作文档
+
+- `github-feishu-integration-handbook.md` (接入规范)
+- `github-feishu-troubleshooting.md` (故障排查手册)
+- `github-feishu-e2e-case-index.md` (真实 E2E 案例索引)
+- `github-feishu-okr-knowledgebase-design.md` (OKR 与知识库建设设计)
+
+## 4. Migration Notes
 
 - Historical sources may exist under `docs/superpowers/specs/` and `docs/superpowers/plans/`.
 - Those original paths are kept as compatibility stubs（兼容壳）for old links and PR discussions.
