@@ -13,6 +13,13 @@ REQUIRED_FIELDS = [
     "OKR负责人",
 ]
 
+TRIGGER_CONTROL_TYPES = [
+    "pasteUpdate",
+    "automationBatchUpdate",
+    "appendImport",
+    "openAPIBatchUpdate",
+]
+
 
 def require_fields(field_ids):
     missing = [name for name in REQUIRED_FIELDS if name not in field_ids]
@@ -78,7 +85,7 @@ def build_workflow_specs(table_name, field_ids):
                             ],
                         },
                     ],
-                    trigger_control_list=["当前阻塞", "风险等级"],
+                    trigger_control_list=TRIGGER_CONTROL_TYPES,
                 ),
                 {
                     "id": "notify_goal_owner",
@@ -126,7 +133,7 @@ def build_workflow_specs(table_name, field_ids):
                             ],
                         }
                     ],
-                    trigger_control_list=["approval_status"],
+                    trigger_control_list=TRIGGER_CONTROL_TYPES,
                 ),
                 {
                     "id": "notify_after_approval",
@@ -174,7 +181,7 @@ def build_workflow_specs(table_name, field_ids):
                             ],
                         }
                     ],
-                    trigger_control_list=["当前状态", "OKR对齐"],
+                    trigger_control_list=TRIGGER_CONTROL_TYPES,
                 ),
                 {
                     "id": "notify_okr_owner",

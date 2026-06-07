@@ -20,6 +20,13 @@ FIELDS = {
     "OKR负责人": "fld_okr_owner_user",
 }
 
+TRIGGER_CONTROL_TYPES = [
+    "pasteUpdate",
+    "automationBatchUpdate",
+    "appendImport",
+    "openAPIBatchUpdate",
+]
+
 
 class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
     def test_builds_three_workflow_specs(self):
@@ -53,7 +60,7 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
                         ],
                     }
                 ],
-                "trigger_control_list": ["当前阻塞", "风险等级"],
+                "trigger_control_list": TRIGGER_CONTROL_TYPES,
             },
             {
                 "condition_list": [
@@ -73,7 +80,7 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
                         ],
                     }
                 ],
-                "trigger_control_list": ["approval_status"],
+                "trigger_control_list": TRIGGER_CONTROL_TYPES,
             },
             {
                 "condition_list": [
@@ -93,7 +100,7 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
                         ],
                     }
                 ],
-                "trigger_control_list": ["当前状态", "OKR对齐"],
+                "trigger_control_list": TRIGGER_CONTROL_TYPES,
             },
         ]
         for workflow, expected_data in zip(workflows, expected_trigger_data):
