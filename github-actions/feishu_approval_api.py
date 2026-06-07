@@ -65,3 +65,9 @@ def resolve_instance_status(instance, decision_id):
         "automation_status": "paused",
         "decision_summary": f"pending:{decision_id}",
     }
+
+
+def build_status_projection(instance, decision_id, instance_code):
+    resolved = resolve_instance_status(instance, decision_id)
+    resolved["approval_instance_code"] = instance_code
+    return resolved
