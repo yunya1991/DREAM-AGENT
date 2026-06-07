@@ -64,6 +64,12 @@ last_verified: 2026-06-07
 - 新 Base 执行清单：`docs/github-feishu-new-base-e2e-runbook.md`
 - 设计总览：`docs/github-feishu-okr-knowledgebase-design.md`
 
+### 2.x Dream-Agent Hybrid Dispatch
+
+- 设计：`docs/superpowers/specs/2026-06-07-dream-agent-hybrid-unit-dispatch-design.md`
+- 计划：`docs/superpowers/plans/2026-06-07-dream-agent-hybrid-unit-dispatch-implementation.md`
+- 样板单元：`task-strategy-mainline-ticket-001`
+
 ## 3. Gate Evidence Checklist (Where to Look)
 
 ### 3.1 分解线（UI-Driven Flow）

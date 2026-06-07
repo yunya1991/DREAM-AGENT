@@ -12,7 +12,8 @@
   "version": 1,
   "generated_at": "2026-05-19T00:10:00.000Z",
   "open_tasks": [
-    "task-connectivity-gap-trading-hub-001"
+    "task-connectivity-gap-trading-hub-001",
+    "task-strategy-mainline-ticket-001"
   ],
   "tasks": [
     {
@@ -1746,6 +1747,48 @@
         "trigger": [],
         "owner": ""
       }
+    },
+    {
+      "goal_id": "goal-strategy-mainline-dispatch-20260607",
+      "task_id": "task-strategy-mainline-ticket-001",
+      "parent_task_id": "",
+      "title": "策略设置成功 -> 生成策略任务单（混合单元样板）",
+      "source_type": "assigned",
+      "task_type": "serial",
+      "mode": "STANDARD",
+      "status": "open",
+      "depends_on": [],
+      "dependency_gate": "planned",
+      "shared_boundary": [
+        "ledger/tasks/index.json",
+        "templates/pr-comment-hybrid-unit-dispatch.md"
+      ],
+      "sync_checkpoint": [
+        "docs/superpowers/specs/2026-06-07-dream-agent-hybrid-unit-dispatch-design.md"
+      ],
+      "current_sync_state": "none",
+      "owner_agent": "",
+      "validator_agent": "Validator AGENT",
+      "governance_agent": "Governance AGENT",
+      "workspace_path": "DREAM-AGENT",
+      "unit_id": "unit-strategy-task-ticket-001",
+      "feishu_asset_mode": "degraded-with-backfill",
+      "version_anchor": {
+        "git_commit_before": "",
+        "git_branch_or_pr_ref": "",
+        "workflow_run_id": "",
+        "acceptance_request_id": "",
+        "feishu_asset_before_snapshot": ""
+      },
+      "rollback_strategy": {
+        "default_level": "unit",
+        "trigger": [
+          "validator_direction_error",
+          "acceptance_chain_failed"
+        ],
+        "owner": "Governance AGENT"
+      },
+      "next_required_action": "governance: dispatch hybrid unit and post STARTED"
     }
   ],
   "last_updated": "2026-05-19T00:00:00.000Z",
