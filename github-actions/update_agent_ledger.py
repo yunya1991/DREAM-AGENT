@@ -56,7 +56,19 @@ def build_governance_closure(
     }
 
 
+def normalize_version_anchor(anchor):
+    anchor = anchor or {}
+    return {
+        "git_commit_before": anchor.get("git_commit_before", ""),
+        "git_branch_or_pr_ref": anchor.get("git_branch_or_pr_ref", ""),
+        "workflow_run_id": anchor.get("workflow_run_id", ""),
+        "acceptance_request_id": anchor.get("acceptance_request_id", ""),
+        "feishu_asset_before_snapshot": anchor.get("feishu_asset_before_snapshot", ""),
+    }
+
+
 def apply_status_transition(task, requested_status):
+    task["version_anchor"] = normalize_version_anchor(task.get("version_anchor"))
     current_status = task.get("status")
     if current_status == requested_status:
         return task, {

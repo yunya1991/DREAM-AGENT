@@ -34,6 +34,20 @@
 - Files to modify:
 - Evidence to attach:
 
+## Hybrid Unit
+- Unit ID:
+- Track:
+- Feishu Asset Mode:
+- Acceptance Mode:
+
+## Version And Rollback
+- Git Commit Before:
+- PR Ref:
+- Workflow Run ID:
+- Feishu Asset Before Snapshot:
+- Default Rollback Level:
+- Rollback Owner:
+
 ## Protected Boundaries
 - Owner directories:
 - Files not to modify:

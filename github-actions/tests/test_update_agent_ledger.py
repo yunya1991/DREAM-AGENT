@@ -158,6 +158,40 @@ class GovernanceUpdaterIOTests(unittest.TestCase):
         self.assertTrue(result["state_changed"])
 
 
+class HybridRollbackRecordTests(unittest.TestCase):
+    def test_task_template_exposes_rollback_fields(self):
+        data = json.loads(
+            (ROOT / "ledger" / "templates" / "task-record.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertIn("rollback_strategy", data)
+        self.assertIn("version_anchor", data)
+
+    def test_normalize_version_anchor_fills_missing_fields(self):
+        anchor = MODULE.normalize_version_anchor({"git_commit_before": "abc123"})
+        self.assertEqual(anchor["git_commit_before"], "abc123")
+        self.assertEqual(anchor["git_branch_or_pr_ref"], "")
+        self.assertEqual(anchor["workflow_run_id"], "")
+        self.assertEqual(anchor["acceptance_request_id"], "")
+        self.assertEqual(anchor["feishu_asset_before_snapshot"], "")
+
+    def test_noop_transition_keeps_state_change_false(self):
+        task = {
+            "status": "ledgered",
+            "governance_closure": {
+                "archive_summary": "x",
+                "index_updates": ["docs/README.md"],
+                "faq_decision": "x",
+                "faq_entries": ["y"],
+                "closure_agent": "SOLO",
+                "closure_completed_at": "2026-06-07T00:00:00Z",
+            },
+        }
+        _, result = MODULE.apply_status_transition(task, "ledgered")
+        self.assertFalse(result["state_changed"])
+
+
 class WorkflowEntrypointTests(unittest.TestCase):
     def test_ledger_maintenance_workflow_surfaces_governance_suite(self):
         text = (
