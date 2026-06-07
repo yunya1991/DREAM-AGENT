@@ -3,8 +3,8 @@
 > 文档类型：工作手册 + 团队宪法  
 > 维护者：Claude Code（自动监控更新）  
 > 仓库：`yunya1991/dreambuddy-v1`  
-> 最后更新：2026-05-22
-> 最后同步 commit：d4f783d  
+> 最后更新：2026-06-07
+> 最后同步 commit：6f1d680  
 > 用途：接到任务后快速定位工具、规则、流程，减少上下文重建成本，最大化交付质量与积分奖励
 
 ---
@@ -390,3 +390,4 @@ Planner / Coder / Reviewer / Tester / Scribe 的分工，是为了让每次交�
 
 | v-auto | 2026-05-21 | 自动同步：检测到协议文档变更（00-AGENT-CONSTITUTION / 01-COLLABORATION-PROTOCOL / 02-ARCHITECTURE / 03-WORKFLOWS-AND-NORMS / 04-ENGINEERING-INDEX / 05-FAQ / 06-SKILLS-INVENTORY / 07-PHASE2-COLLAB-CLOSURE-MINIMUM-KIT / 08-FILE-HEADER-PROTOCOL / README / agent-collaboration-system-v1-design / agent-collaboration-system-v1-governance-agent-implementation-plan / agent-collaboration-system-v1-governance-cycle-implementation-plan / agent-collaboration-system-v1-implementation-plan / agent-efficient-collaboration-mode / agent-ledger-protocol-vs-governance-short-spec / agent-standard-dev-lifecycle-design / agent-standard-dev-lifecycle-implementation-plan / dual-agent-collaboration-foundation-design / self-hosted-runner），commit 2f6bb73 |
 | v-auto | 2026-05-22 | 自动同步：检测到协议文档变更（00-AGENT-CONSTITUTION / 01-COLLABORATION-PROTOCOL / 02-ARCHITECTURE / 03-WORKFLOWS-AND-NORMS / 04-ENGINEERING-INDEX / 05-FAQ / 06-SKILLS-INVENTORY / 07-PHASE2-COLLAB-CLOSURE-MINIMUM-KIT / 08-FILE-HEADER-PROTOCOL / README / agent-collaboration-system-v1-design / agent-collaboration-system-v1-governance-agent-implementation-plan / agent-collaboration-system-v1-governance-cycle-implementation-plan / agent-collaboration-system-v1-implementation-plan / agent-efficient-collaboration-mode / agent-ledger-protocol-vs-governance-short-spec / agent-standard-dev-lifecycle-design / agent-standard-dev-lifecycle-implementation-plan / dual-agent-collaboration-foundation-design / self-hosted-runner / superpowers/templates/agent-task-card），commit d4f783d |
+| v-auto | 2026-06-07 | 自动同步：检测到协议文档变更（00-AGENT-CONSTITUTION / 01-COLLABORATION-PROTOCOL / 02-ARCHITECTURE / 03-WORKFLOWS-AND-NORMS / 04-ENGINEERING-INDEX / 05-FAQ / 06-SKILLS-INVENTORY / 07-PHASE2-COLLAB-CLOSURE-MINIMUM-KIT / 08-FILE-HEADER-PROTOCOL / README / acceptance-auto-trigger-pilot / agent-acceptance-request-protocol-design / agent-acceptance-request-protocol-implementation-plan / agent-collaboration-system-v1-design / agent-collaboration-system-v1-governance-agent-implementation-plan / agent-collaboration-system-v1-governance-cycle-implementation-plan / agent-collaboration-system-v1-implementation-plan / agent-efficient-collaboration-mode / agent-ledger-protocol-vs-governance-short-spec / agent-lifecycle-guard-compatibility-v2-design / agent-lifecycle-guard-compatibility-v2-implementation-plan / agent-lifecycle-guard-pending-state-implementation-plan / agent-standard-dev-lifecycle-design / agent-standard-dev-lifecycle-implementation-plan / dual-agent-collaboration-foundation-design / self-hosted-runner / superpowers/templates/agent-task-card），commit 6f1d680 |
