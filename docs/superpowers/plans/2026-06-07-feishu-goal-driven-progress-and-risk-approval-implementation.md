@@ -898,7 +898,7 @@ git commit -m "feat: add goal progress approval cycle"
 - Modify: `docs/04-ENGINEERING-INDEX.md`
 - Modify: `docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md`
 
-- [ ] **Step 1: 更新脚本与文档入口**
+- [x] **Step 1: 更新脚本与文档入口**
 
 Add to `github-actions/README.md`:
 
@@ -932,7 +932,7 @@ Add to `docs/04-ENGINEERING-INDEX.md`:
 - 计划：`docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md`
 ```
 
-- [ ] **Step 2: 运行最小回归**
+- [x] **Step 2: 运行最小回归**
 
 Run:
 
@@ -953,6 +953,8 @@ Expected:
 - `git diff --check` outputs nothing
 
 - [ ] **Step 3: Commit**
+
+Per current execution request, do not commit in this run.
 
 ```bash
 git add github-actions/README.md README.md docs/README.md docs/04-ENGINEERING-INDEX.md docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md

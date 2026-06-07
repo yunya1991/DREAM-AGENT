@@ -37,6 +37,8 @@ See `agent-efficient-collaboration-mode.md` and `agent-ledger-protocol-vs-govern
 - `docs/superpowers/plans/2026-06-07-dream-agent-hybrid-unit-dispatch-implementation.md`
 - `docs/superpowers/specs/2026-06-07-github-feishu-collaboration-closure-repair-design.md`
 - `docs/superpowers/plans/2026-06-07-github-feishu-collaboration-closure-repair-implementation.md`
+- `docs/superpowers/specs/2026-06-07-feishu-goal-driven-progress-and-risk-approval-design.md`
+- `docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md`
 
 ## 3. GitHub x 飞书协作文档
 
