@@ -71,6 +71,16 @@ class AcceptanceWorkflowContractTests(unittest.TestCase):
             text,
         )
 
+    def test_acceptance_workflow_supports_approval_smoke_mode(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("smoke_action:", text)
+        self.assertIn("approval-smoke", text)
+        self.assertIn("Fetch approval definition and create instance", text)
+        self.assertIn("approval_definition.json", text)
+        self.assertIn("approval_instance_create.json", text)
+
 
 if __name__ == "__main__":
     unittest.main()
