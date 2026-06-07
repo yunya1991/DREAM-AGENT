@@ -147,7 +147,7 @@ created_at: 2026-05-20
 
 ### 2.2 2026-06-07 真实 E2E 结论
 
-`PR #7` 上已完成真实 `workflow_dispatch` 联调。首个全链路成功 run 为 `27085309457`（头提交 `47d9432`），后续修复 `work_item_title` 摘要字段后的验证 run 为 `27085416975`（头提交 `09d5815`）。
+`PR #7` 上已完成真实 `workflow_dispatch` 联调。首个全链路成功 run 为 `27085309457`（头提交 `47d9432`），后续修复 `work_item_title` 摘要字段后的验证 run 为 `27085416975`（头提交 `09d5815`），再后续验证 OKR 摘要渲染代码已上线的 run 为 `27085868440`（头提交 `7089809`）。
 
 本轮已真实打通以下链路：
 
@@ -173,6 +173,7 @@ created_at: 2026-05-20
 - `Acceptance Orchestration V2` 已完成一次真实 PR 评论驱动 E2E 闭环验证
 - `VALIDATION_RESULT` 的 `Context Snapshot` 已能回写真实 `work_item_title`
 - 若上下文中存在 `objective` / `key_result`，`VALIDATION_RESULT` 的 `Context Snapshot` 也必须显式呈现 OKR 摘要字段
+- `27085868440` 已验证 OKR 摘要渲染代码随 `7089809` 生效，但当前真实验收记录仍未提供可读的 `Objective ID / KR ID`，因此 PR 评论中尚未出现 OKR 摘要行
 
 ## 3. Role-Specific Norms
 

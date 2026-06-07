@@ -179,6 +179,23 @@ status: "draft"
   - `名称`
   - 最后兜底首个非空字符串字段
 
+### 5. 已部署 OKR 摘要渲染，但 PR 评论里仍看不到 OKR 行
+
+原因：
+
+- 当前真实 Base record 没有可读的 `Objective ID` / `KR ID`
+- 或 bot 对对应 OKR 对象没有读取权限
+
+修复：
+
+- 先确认验收记录中真实存在 `Objective ID` / `KR ID`
+- 再确认 bot 已开通 `okr:objective:read` 与 `okr:key_result:read`
+- 然后重跑 workflow，检查 `Context Snapshot` 是否出现：
+  - `objective_id`
+  - `objective_title`
+  - `key_result_id`
+  - `key_result_title`
+
 ## 推荐验证命令
 
 ### 本地冒烟

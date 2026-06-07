@@ -69,12 +69,18 @@ OKR 链路当前属于“部分打通”状态：
 - 已完成：
   - `collect_lark_context.py` 中 `objective` / `key_result` 读取逻辑；
   - 单元测试中的 OKR mock 覆盖；
-  - 设计文档中对 `Objective / KR` 作为上游上下文的正式定义。
+  - 设计文档中对 `Objective / KR` 作为上游上下文的正式定义；
+  - `7089809` 对应真实 run `27085868440` 已验证 PR 评论渲染逻辑可随部署生效。
 - 未完成：
   - bot 的真实 OKR 权限确认；
   - 真实 `Objective ID / KR ID` 对象读取；
   - 带 OKR 的真实 E2E 联调；
   - 在最终 PR 评论或产物中明确体现 OKR 摘要。
+
+补充说明：
+
+- 上述真实 run 虽成功，但当前验收请求绑定的真实 Base record 仍未提供可读的 `Objective ID / KR ID`，因此评论中未出现 OKR 摘要字段；
+- 这表明当前 blocker 已从“代码能力缺失”转为“真实数据与权限尚未补齐”。
 
 结论：
 
@@ -285,4 +291,3 @@ OKR 链路当前属于“部分打通”状态：
 - 仓库与飞书形成双层知识库结构；
 - `github-feishu-bot-bootstrap` 成为持续演进的标准技能入口；
 - 后续新增 bot 场景时，不再从零开始摸索接入方式。
-
