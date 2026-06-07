@@ -96,6 +96,37 @@ class RunAcceptanceCycleTests(unittest.TestCase):
         self.assertIn("- key_result_id=kr1", comment)
         self.assertIn("- key_result_title=Reduce reruns", comment)
 
+    def test_build_validation_result_comment_renders_raw_okr_ids_from_work_item_fields(self):
+        comment = MODULE.build_validation_result_comment(
+            cycle={
+                "acceptance_cycle_id": "ac-20260607-001",
+                "linked_prs": ["7"],
+            },
+            validation_result={
+                "decision": "ACCEPTED",
+                "acceptance_request_id": "ar-20260607-006",
+                "protocol_read_result": "PASS",
+                "source_of_truth_verdict": "usable",
+                "reason_codes": ["NONE"],
+                "recommended_next_action": "validator: post VALIDATION_RESULT",
+            },
+            context_snapshot={
+                "context_summary": "Pilot item",
+                "work_item": {
+                    "record_id": "rec789",
+                    "fields": {
+                        "Objective ID": "obj-from-base",
+                        "KR ID": "kr-from-base",
+                    },
+                },
+                "objective": {},
+                "key_result": {},
+            },
+        )
+
+        self.assertIn("- objective_id=obj-from-base", comment)
+        self.assertIn("- key_result_id=kr-from-base", comment)
+
     @mock.patch.object(MODULE, "collect_context_snapshot")
     @mock.patch.object(MODULE, "evaluate_acceptance_request")
     def test_run_cycle_does_not_duplicate_existing_pr_number(

@@ -32,8 +32,13 @@ def build_context_snapshot_lines(cycle: dict, context_snapshot: dict) -> list[st
         f"- pr_number={cycle['linked_prs'][0] if cycle.get('linked_prs') else ''}",
     ]
 
+    work_item = context_snapshot.get("work_item") or {}
+    work_item_fields = work_item.get("fields") or {}
     objective = context_snapshot.get("objective") or {}
-    objective_id = first_non_empty_value(objective, ("id",))
+    objective_id = first_non_empty_value(
+        {"work_item_objective_id": work_item_fields.get("Objective ID", ""), **objective},
+        ("id", "work_item_objective_id"),
+    )
     objective_title = first_non_empty_value(
         objective,
         ("name", "title", "objective_title"),
@@ -44,7 +49,10 @@ def build_context_snapshot_lines(cycle: dict, context_snapshot: dict) -> list[st
         lines.append(f"- objective_title={objective_title}")
 
     key_result = context_snapshot.get("key_result") or {}
-    key_result_id = first_non_empty_value(key_result, ("id",))
+    key_result_id = first_non_empty_value(
+        {"work_item_key_result_id": work_item_fields.get("KR ID", ""), **key_result},
+        ("id", "work_item_key_result_id"),
+    )
     key_result_title = first_non_empty_value(
         key_result,
         ("name", "title", "key_result_title"),
