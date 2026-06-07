@@ -122,7 +122,42 @@ jobs:
         run: |
           python3 github-actions/manage_acceptance_cycle.py > acceptance_cycle.json
 
+      - name: Mint lark tenant access token
+        env:
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          payload = json.dumps(
+              {
+                  "app_id": os.environ["LARK_APP_ID"],
+                  "app_secret": os.environ["LARK_APP_SECRET"],
+              }
+          ).encode("utf-8")
+          request = urllib.request.Request(
+              "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+              data=payload,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read().decode("utf-8"))
+          if result.get("code") != 0 or not result.get("tenant_access_token"):
+              raise SystemExit(json.dumps(result, ensure_ascii=False))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
+          PY
+
       - name: Collect lark context
+        env:
+          LARK_IDENTITY: bot
+          LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+          LARKSUITE_CLI_STRICT_MODE: off
         run: |
           python3 github-actions/collect_lark_context.py acceptance_cycle.json > acceptance_context.json
 

@@ -2,14 +2,19 @@ import json
 import sys
 from pathlib import Path
 
-from lark_cli import ensure_lark_auth, run_lark_json
+from lark_cli import ensure_lark_auth, get_lark_identity, run_lark_json
 
 
 def extract_base_token(base_url: str) -> str:
     return base_url.split("/base/", 1)[1].split("?", 1)[0]
 
 
-def get_base_record(base_token: str, table_id: str, record_id: str) -> dict:
+def get_base_record(
+    base_token: str,
+    table_id: str,
+    record_id: str,
+    identity: str = "user",
+) -> dict:
     payload = run_lark_json(
         [
             "base",
@@ -20,7 +25,8 @@ def get_base_record(base_token: str, table_id: str, record_id: str) -> dict:
             table_id,
             "--record-id",
             record_id,
-        ]
+        ],
+        identity=identity,
     )
     data = payload["data"]
     if "records" in data:
@@ -37,14 +43,15 @@ def get_base_record(base_token: str, table_id: str, record_id: str) -> dict:
     }
 
 
-def get_objective(objective_id: str) -> dict:
+def get_objective(objective_id: str, identity: str = "user") -> dict:
     payload = run_lark_json(
-        ["okr", "objectives", "get", "--params", f'{{"objective_id":"{objective_id}"}}']
+        ["okr", "objectives", "get", "--params", f'{{"objective_id":"{objective_id}"}}'],
+        identity=identity,
     )
     return payload["data"]["objective"]
 
 
-def get_key_result(key_result_id: str) -> dict:
+def get_key_result(key_result_id: str, identity: str = "user") -> dict:
     payload = run_lark_json(
         [
             "okr",
@@ -52,21 +59,28 @@ def get_key_result(key_result_id: str) -> dict:
             "get",
             "--params",
             f'{{"key_result_id":"{key_result_id}"}}',
-        ]
+        ],
+        identity=identity,
     )
     return payload["data"]["key_result"]
 
 
 def collect_context_snapshot(cycle: dict) -> dict:
     locator = cycle["lark_context_locator"]
-    ensure_lark_auth(identity="user")
+    identity = get_lark_identity()
+    ensure_lark_auth(identity=identity)
     base_token = extract_base_token(locator["base_url"])
-    record = get_base_record(base_token, locator["table_id"], locator["record_id"])
+    record = get_base_record(
+        base_token,
+        locator["table_id"],
+        locator["record_id"],
+        identity=identity,
+    )
     fields = record.get("fields", {})
     objective_id = fields.get("Objective ID", "")
     key_result_id = fields.get("KR ID", "")
-    objective = get_objective(objective_id) if objective_id else {}
-    key_result = get_key_result(key_result_id) if key_result_id else {}
+    objective = get_objective(objective_id, identity=identity) if objective_id else {}
+    key_result = get_key_result(key_result_id, identity=identity) if key_result_id else {}
     return {
         "work_item": {
             "record_id": record["record_id"],

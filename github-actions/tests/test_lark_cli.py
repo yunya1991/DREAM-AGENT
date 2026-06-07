@@ -1,4 +1,5 @@
 import importlib.util
+import os
 import subprocess
 import unittest
 from pathlib import Path
@@ -12,6 +13,14 @@ LARK_CLI_SPEC.loader.exec_module(LARK_CLI)
 
 
 class LarkCliTests(unittest.TestCase):
+    def test_get_lark_identity_defaults_to_user(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            self.assertEqual(LARK_CLI.get_lark_identity(), "user")
+
+    def test_get_lark_identity_reads_environment_override(self):
+        with mock.patch.dict(os.environ, {"LARK_IDENTITY": "bot"}, clear=False):
+            self.assertEqual(LARK_CLI.get_lark_identity(), "bot")
+
     def test_build_command_appends_identity_and_json_output(self):
         argv = LARK_CLI.build_lark_command(
             ["base", "+record-get", "--base-token", "app123"],
@@ -67,6 +76,34 @@ class LarkCliTests(unittest.TestCase):
         )
 
         LARK_CLI.ensure_lark_auth(identity="user")
+
+    @mock.patch.object(LARK_CLI.subprocess, "run")
+    def test_ensure_lark_auth_skips_status_when_bot_env_credentials_exist(self, mock_run):
+        with mock.patch.dict(
+            os.environ,
+            {
+                "LARKSUITE_CLI_APP_ID": "cli_123",
+                "LARKSUITE_CLI_APP_SECRET": "secret_123",
+            },
+            clear=False,
+        ):
+            LARK_CLI.ensure_lark_auth(identity="bot")
+
+        mock_run.assert_not_called()
+
+    @mock.patch.object(LARK_CLI.subprocess, "run")
+    def test_ensure_lark_auth_skips_status_when_bot_env_token_exists(self, mock_run):
+        with mock.patch.dict(
+            os.environ,
+            {
+                "LARKSUITE_CLI_APP_ID": "cli_123",
+                "LARKSUITE_CLI_TENANT_ACCESS_TOKEN": "tat_123",
+            },
+            clear=False,
+        ):
+            LARK_CLI.ensure_lark_auth(identity="bot")
+
+        mock_run.assert_not_called()
 
 
 if __name__ == "__main__":

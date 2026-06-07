@@ -39,6 +39,16 @@ class AcceptanceWorkflowContractTests(unittest.TestCase):
         self.assertIn("uses: actions/checkout@v4", text)
         self.assertNotIn("ref: main", text)
 
+    def test_acceptance_workflow_injects_bot_lark_credentials(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("LARK_IDENTITY: bot", text)
+        self.assertIn("LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}", text)
+        self.assertIn("LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}", text)
+        self.assertIn("LARKSUITE_CLI_STRICT_MODE: off", text)
+        self.assertIn("tenant_access_token/internal", text)
+
 
 if __name__ == "__main__":
     unittest.main()

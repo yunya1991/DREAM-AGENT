@@ -81,6 +81,51 @@ class CollectLarkContextTests(unittest.TestCase):
         self.assertEqual(snapshot["key_result"]["id"], "kr1")
         self.assertEqual(snapshot["context_summary"], "Pilot item")
 
+    @mock.patch.dict(os.environ, {"LARK_IDENTITY": "bot"}, clear=False)
+    @mock.patch.object(MODULE, "ensure_lark_auth")
+    @mock.patch.object(MODULE, "run_lark_json")
+    def test_collect_context_uses_env_selected_identity_for_all_lark_calls(
+        self,
+        mock_run,
+        mock_auth,
+    ):
+        mock_run.side_effect = [
+            {
+                "data": {
+                    "records": [
+                        {
+                            "record_id": "rec789",
+                            "fields": {
+                                "Title": "Pilot item",
+                                "Objective ID": "obj1",
+                                "KR ID": "kr1",
+                            },
+                        }
+                    ]
+                }
+            },
+            {"data": {"objective": {"id": "obj1"}}},
+            {"data": {"key_result": {"id": "kr1"}}},
+        ]
+
+        snapshot = MODULE.collect_context_snapshot(
+            {
+                "work_item_id": "WI-123",
+                "lark_context_locator": {
+                    "base_url": "https://example.feishu.cn/base/app123?table=tbl456",
+                    "table_id": "tbl456",
+                    "record_id": "rec789",
+                },
+            }
+        )
+
+        mock_auth.assert_called_once_with(identity="bot")
+        self.assertEqual(mock_run.call_count, 3)
+        for call in mock_run.call_args_list:
+            self.assertEqual(call.kwargs["identity"], "bot")
+        self.assertEqual(snapshot["objective"]["id"], "obj1")
+        self.assertEqual(snapshot["key_result"]["id"], "kr1")
+
     @mock.patch.object(MODULE, "run_lark_json")
     def test_get_base_record_reads_real_lark_cli_record_shape(
         self,
