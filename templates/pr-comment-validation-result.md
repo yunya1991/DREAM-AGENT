@@ -3,6 +3,7 @@
 Validator: <validator agent>
 Validation Mode: <delivery | acceptance>
 Acceptance Request ID: <request id | none>
+Acceptance Cycle ID: <cycle id | none>
 Hard Gate Result: <PASS | BLOCK>
 Score: <0-100>
 Decision: <ACCEPTED | REWORK | BLOCK>

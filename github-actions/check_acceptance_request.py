@@ -3,10 +3,15 @@ import re
 
 REQUIRED_FIELDS = [
     "Acceptance Request ID:",
+    "Acceptance Cycle ID:",
+    "Work Item ID:",
     "Request Type:",
     "Request Mode:",
     "Source of Truth:",
     "Target PR:",
+    "Lark Base URL:",
+    "Lark Table ID:",
+    "Lark Record ID:",
 ]
 
 REQUIRED_SECTIONS = [
@@ -17,6 +22,12 @@ REQUIRED_SECTIONS = [
     "## 本轮不要求",
     "## 期望回写格式",
 ]
+
+
+def extract_field(comment_body: str, field_name: str) -> str:
+    pattern = rf"{re.escape(field_name)}:\s*(.+)"
+    match = re.search(pattern, comment_body)
+    return match.group(1).strip() if match else ""
 
 
 def evaluate_acceptance_request(comment_body: str) -> dict:
@@ -44,14 +55,16 @@ def evaluate_acceptance_request(comment_body: str) -> dict:
             "recommended_next_action": "author: complete the missing ACCEPTANCE_REQUEST fields and sections",
         }
 
-    match = re.search(r"Acceptance Request ID:\s*(.+)", comment_body)
-    request_id = match.group(1).strip() if match else "none"
-
     return {
         "decision": "ACCEPTED",
         "protocol_read_result": "PASS",
         "source_of_truth_verdict": "usable",
         "reason_codes": ["NONE"],
-        "recommended_next_action": "validator: post VALIDATION_RESULT",
-        "acceptance_request_id": request_id,
+        "recommended_next_action": "context-reader: collect lark work item snapshot",
+        "acceptance_request_id": extract_field(comment_body, "Acceptance Request ID"),
+        "acceptance_cycle_id": extract_field(comment_body, "Acceptance Cycle ID"),
+        "work_item_id": extract_field(comment_body, "Work Item ID"),
+        "lark_base_url": extract_field(comment_body, "Lark Base URL"),
+        "lark_table_id": extract_field(comment_body, "Lark Table ID"),
+        "lark_record_id": extract_field(comment_body, "Lark Record ID"),
     }

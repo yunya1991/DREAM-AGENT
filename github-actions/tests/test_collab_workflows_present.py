@@ -23,5 +23,22 @@ class AcceptanceWorkflowPresenceTests(unittest.TestCase):
         self.assertTrue(workflow.exists(), str(workflow))
 
 
+class AcceptanceWorkflowContractTests(unittest.TestCase):
+    def test_acceptance_workflow_uses_cycle_and_lark_scripts(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("python3 github-actions/manage_acceptance_cycle.py", text)
+        self.assertIn("python3 github-actions/collect_lark_context.py", text)
+        self.assertIn("python3 github-actions/run_acceptance_cycle.py", text)
+
+    def test_acceptance_workflow_does_not_pin_checkout_to_main(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("uses: actions/checkout@v4", text)
+        self.assertNotIn("ref: main", text)
+
+
 if __name__ == "__main__":
     unittest.main()

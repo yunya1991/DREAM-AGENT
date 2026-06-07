@@ -133,6 +133,18 @@ created_at: 2026-05-20
 13. If `REWORK`, `BLOCK`, or `Must-Fix Items` exist, fix them before continuing mainline work.
 14. Governance AGENT merges after all gates pass.
 
+### 2.1 V2 串行验收链
+
+1. `context-reader` 读取飞书 `work item` 和可选 `Objective / KR`
+2. `protocol-checker` 校验 `ACCEPTANCE_REQUEST` 结构化完整性
+3. `acceptance-validator` 形成当前轮次的验收判断
+4. `result-synthesizer` 回写唯一正式 `VALIDATION_RESULT`
+
+规则：
+
+- GitHub `VALIDATION_RESULT` 是正式验收真源
+- 飞书只允许回写摘要字段，不允许回写正式主结论字段
+
 ## 3. Role-Specific Norms
 
 ### 3.1 Ledger/Protocol AGENT
