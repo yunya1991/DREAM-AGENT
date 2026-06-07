@@ -166,6 +166,7 @@ jobs:
               result = json.loads(response.read().decode("utf-8"))
           if result.get("code") != 0 or not result.get("tenant_access_token"):
               raise SystemExit(json.dumps(result, ensure_ascii=False))
+          print(f"::add-mask::{result['tenant_access_token']}")
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
               fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
           PY
@@ -251,6 +252,7 @@ jobs:
               result = json.loads(response.read().decode("utf-8"))
           if result.get("code") != 0 or not result.get("tenant_access_token"):
               raise SystemExit(json.dumps(result, ensure_ascii=False))
+          print(f"::add-mask::{result['tenant_access_token']}")
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
               fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
           PY
