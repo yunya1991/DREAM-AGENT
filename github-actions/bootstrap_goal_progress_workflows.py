@@ -19,22 +19,48 @@ def require_fields(field_ids):
         raise ValueError(f"missing workflow fields: {', '.join(missing)}")
 
 
+def build_ref(trigger_id, field_id):
+    return f"$.{trigger_id}.{field_id}"
+
+
+def build_change_record_trigger(step_id, title, next_step, table_name, condition_list):
+    return {
+        "id": step_id,
+        "type": "ChangeRecordTrigger",
+        "title": title,
+        "next": next_step,
+        "data": {"table_name": table_name, "condition_list": condition_list},
+    }
+
+
 def build_workflow_specs(table_name, field_ids):
     require_fields(field_ids)
-    blocker_ref = f"$.trigger_blocker.{field_ids['目标负责人']}"
-    okr_owner_ref = f"$.trigger_blocker.{field_ids['OKR负责人']}"
+    blocker_ref = build_ref("trigger_blocker", field_ids["目标负责人"])
+    approval_ref = build_ref("trigger_approval", field_ids["目标负责人"])
+    okr_owner_ref = build_ref("trigger_okr", field_ids["OKR负责人"])
     return [
         {
             "client_token": f"goal-blocker-{int(time.time())}",
             "title": "阻塞升级提醒",
             "steps": [
-                {
-                    "id": "trigger_blocker",
-                    "type": "ChangeRecordTrigger",
-                    "title": "监控高风险阻塞",
-                    "next": "notify_goal_owner",
-                    "data": {"table_name": table_name},
-                },
+                build_change_record_trigger(
+                    step_id="trigger_blocker",
+                    title="监控高风险阻塞",
+                    next_step="notify_goal_owner",
+                    table_name=table_name,
+                    condition_list=[
+                        {
+                            "field_id": field_ids["当前阻塞"],
+                            "operator": "is_not_empty",
+                            "value": "",
+                        },
+                        {
+                            "field_id": field_ids["风险等级"],
+                            "operator": "is",
+                            "value": "high",
+                        },
+                    ],
+                ),
                 {
                     "id": "notify_goal_owner",
                     "type": "LarkMessageAction",
@@ -59,20 +85,26 @@ def build_workflow_specs(table_name, field_ids):
             "client_token": f"goal-approval-{int(time.time()) + 1}",
             "title": "审批完成提醒更新目标",
             "steps": [
-                {
-                    "id": "trigger_approval",
-                    "type": "ChangeRecordTrigger",
-                    "title": "监控审批状态终态",
-                    "next": "notify_after_approval",
-                    "data": {"table_name": table_name},
-                },
+                build_change_record_trigger(
+                    step_id="trigger_approval",
+                    title="监控审批状态终态",
+                    next_step="notify_after_approval",
+                    table_name=table_name,
+                    condition_list=[
+                        {
+                            "field_id": field_ids["approval_status"],
+                            "operator": "is_any_of",
+                            "value": ["approved", "rejected"],
+                        }
+                    ],
+                ),
                 {
                     "id": "notify_after_approval",
                     "type": "LarkMessageAction",
                     "title": "提醒更新目标状态",
                     "next": None,
                     "data": {
-                        "receiver": [{"value_type": "ref", "value": blocker_ref}],
+                        "receiver": [{"value_type": "ref", "value": approval_ref}],
                         "send_to_everyone": False,
                         "title": [{"value_type": "text", "value": "审批完成，请更新目标"}],
                         "content": [
@@ -90,13 +122,19 @@ def build_workflow_specs(table_name, field_ids):
             "client_token": f"goal-okr-{int(time.time()) + 2}",
             "title": "OKR对齐缺失提醒",
             "steps": [
-                {
-                    "id": "trigger_okr",
-                    "type": "ChangeRecordTrigger",
-                    "title": "监控 OKR 对齐缺失",
-                    "next": "notify_okr_owner",
-                    "data": {"table_name": table_name},
-                },
+                build_change_record_trigger(
+                    step_id="trigger_okr",
+                    title="监控 OKR 对齐缺失",
+                    next_step="notify_okr_owner",
+                    table_name=table_name,
+                    condition_list=[
+                        {
+                            "field_id": field_ids["OKR对齐"],
+                            "operator": "is_empty",
+                            "value": "",
+                        }
+                    ],
+                ),
                 {
                     "id": "notify_okr_owner",
                     "type": "LarkMessageAction",
