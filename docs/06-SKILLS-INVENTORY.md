@@ -98,8 +98,8 @@ last_verified: 2026-05-20
 ### 1.9 github-feishu-bot-bootstrap ⭐
 
 - Spec: `SKILLS/github-feishu-bot-bootstrap/SKILL.md`
-- Purpose: 统一飞书开发者应用 / bot 创建、Base 权限开通、GitHub secrets 接线、Actions E2E 联调。
-- When to use: 当需要把 GitHub workflow 接入飞书 Base / OKR，或需要新建、复用、扩展 Feishu bot 协作链路时。
+- Purpose: 作为 GitHub x 飞书长期入口技能，统一处理 Base / OKR / Wiki 接入、bot 权限、workflow 接线、E2E 联调与故障回补。
+- When to use: 当需要把 GitHub workflow 接入飞书 Base / OKR / Wiki，或需要新建、复用、扩展、排障 GitHub x 飞书协作链路时。
 - Trigger words: 飞书 bot、Feishu bot、GitHub 飞书集成、Base 联调、Lark bot、tenant_access_token
 
 ## 2. Operational Scripts (Non-SKILL but Critical)

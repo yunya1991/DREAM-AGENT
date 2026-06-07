@@ -1,21 +1,41 @@
 ---
 name: github-feishu-bot-bootstrap
-description: 统一 GitHub x 飞书 bot 搭建、权限开通、workflow 接线与 E2E 联调。Invoke when 需要新建或扩展 GitHub 与 Feishu 的 bot 协作链路。
-version: "1.0"
+description: GitHub x 飞书长期入口技能。统一处理 Base / OKR / Wiki 接入、bot 权限、workflow 接线、E2E 联调与故障回补。Invoke when 需要新建、扩展或排障 GitHub 与 Feishu 协作链路。
+version: "2.0"
 created: "2026-06-07"
 status: "draft"
 ---
 
 # GitHub Feishu Bot Bootstrap
 
-## 目标
+## 定位
 
-把 GitHub Actions 与飞书开发者应用 / bot 稳定接到同一条自动化链路上，支持：
+本技能不是一次性“建 bot 操作记录”，而是 GitHub x 飞书协作的长期入口技能。它负责：
 
-1. 从 GitHub workflow 读取飞书 Base / OKR 上下文
-2. 用 bot 身份代替不稳定的 `user` 登录态
-3. 以 `tenant_access_token` 为中心完成 runner 侧鉴权
-4. 将真实 E2E 联调过程沉淀为可复用操作模板
+- 为新场景选择正确接入路径
+- 统一 Base / OKR / Wiki 三类资源的接线方法
+- 统一 bot 权限、workflow 环境变量和 E2E 验证标准
+- 吸收真实案例中的新故障模型
+- 把工程结论回补到仓库文档、技能和 PR 评论
+
+## 技能地图
+
+使用本技能时，优先判断当前任务属于哪一类：
+
+1. `Base 接入`
+2. `OKR 接入`
+3. `知识库 / Wiki 接入`
+4. `workflow / bot 接线`
+5. `E2E 验证`
+6. `故障排查`
+
+如果任务同时跨多个模块，默认顺序为：
+
+1. 先 `workflow / bot 接线`
+2. 再 `Base 接入`
+3. 再 `OKR 接入`
+4. 再 `知识库 / Wiki 接入`
+5. 最后 `E2E 验证`
 
 ## 适用场景
 
@@ -26,6 +46,7 @@ status: "draft"
 - 需要把现有 `lark-cli --as user` 流程切换到 `--as bot`
 - 需要排查 runner 中飞书调用失败、身份不稳定、token 缺失的问题
 - 需要扩展更多 GitHub x 飞书协作 bot
+- 需要把真实联调结论沉淀成长期知识资产
 
 ## 输入
 
@@ -49,7 +70,92 @@ status: "draft"
 - 至少一条成功的真实 E2E run 记录
 - 若涉及 OKR，则 `VALIDATION_RESULT` 中可见对应 objective / key result 摘要
 
-## 标准流程
+## 仓库真源
+
+执行本技能时，优先参考以下仓库文档：
+
+- `docs/github-feishu-integration-handbook.md`
+- `docs/github-feishu-troubleshooting.md`
+- `docs/github-feishu-e2e-case-index.md`
+- `docs/github-feishu-okr-knowledgebase-design.md`
+
+这些文档负责沉淀规范、故障和案例；本技能负责把它们转成实际执行路径。
+
+## 标准入口流程
+
+每次执行本技能，都先做以下判断：
+
+1. 当前目标资源是 Base、OKR 还是 Wiki
+2. 当前执行环境是本地 `user` 还是 GitHub Actions `bot`
+3. 当前任务是“首次接入”“扩展现有链路”还是“排障”
+4. 当前任务是否要求真实 E2E 证据
+
+然后按下面的模块流程分流。
+
+## 模块 A. Base 接入
+
+适用于：
+
+- 接 workflow 到 Base record
+- 补 work item 字段
+- 排查 record 读取、字段结构和写权限问题
+
+最小要求：
+
+- 能定位真实 Base URL、Base token、table id、record id
+- `collect_lark_context.py` 能读取真实 record
+- `context_summary` 兼容 `任务`
+- `VALIDATION_RESULT` 至少出现 `work_item_title`
+
+若要作为 OKR 上下文入口，还必须存在：
+
+- `Objective ID`
+- `KR ID`
+
+## 模块 B. OKR 接入
+
+适用于：
+
+- 通过 `Objective ID / KR ID` 挂接 Objective / Key Result
+- 验证评论中能否出现 OKR 摘要
+
+判断顺序：
+
+1. 先确认 Base record 是否存在 `Objective ID / KR ID`
+2. 再确认对应 OKR 对象真实存在
+3. 再确认 bot 是否对这些对象有读取权限
+4. 最后再看评论渲染是否正确
+
+成功标准：
+
+- `Context Snapshot` 中出现：
+  - `objective_id`
+  - `objective_title`
+  - `key_result_id`
+  - `key_result_title`
+
+## 模块 C. 知识库 / Wiki 接入
+
+适用于：
+
+- 创建飞书侧长期入口文档
+- 把仓库结论同步到运营消费层
+
+飞书侧推荐最小目录：
+
+- `GitHub x 飞书协作总览`
+- `Bot 接入手册`
+- `Base / OKR 接入清单`
+- `常见故障与值班手册`
+- `E2E 成功案例`
+
+仓库侧对应真源：
+
+- `docs/github-feishu-integration-handbook.md`
+- `docs/github-feishu-troubleshooting.md`
+- `docs/github-feishu-e2e-case-index.md`
+
+## 模块 D. workflow / bot 接线
 
 ### Phase 1. 创建飞书开发者应用
 
@@ -99,7 +205,7 @@ status: "draft"
    - `LARKSUITE_CLI_TENANT_ACCESS_TOKEN`
    - `LARKSUITE_CLI_STRICT_MODE=off`
 
-## Phase 5. `lark-cli` 关键约束
+## 模块 E. `lark-cli` 关键约束
 
 - 不要假设 runner 上存在稳定的 `user` 登录态
 - 不要把 `auth status` 作为 bot 外部凭据模式下的硬前置门禁
@@ -114,7 +220,7 @@ status: "draft"
 - `LARKSUITE_CLI_TENANT_ACCESS_TOKEN`
 - `LARKSUITE_CLI_STRICT_MODE`
 
-## Phase 6. E2E 验证清单
+## 模块 F. E2E 验证清单
 
 至少验证以下步骤全部成功：
 
@@ -127,7 +233,7 @@ status: "draft"
 7. PR 能收到正式 `VALIDATION_RESULT`
 8. 如存在 OKR，上述评论的 `Context Snapshot` 中能看到 objective / key result 摘要
 
-## 常见故障与修复
+## 模块 G. 常见故障与修复
 
 ### 1. `strict mode is "user"`
 
@@ -196,6 +302,33 @@ status: "draft"
   - `key_result_id`
   - `key_result_title`
 - 如果连回退输出的原始 `objective_id` / `key_result_id` 都没有出现，优先判断为 Base record 本身未填写 OKR 关联字段，而不是代码渲染失败
+
+### 6. 平台弹出“Lark CLI 需要身份验证”
+
+原因：
+
+- 平台可能对 `auth/config` 类命令做统一拦截
+- 不等于真实掉鉴权
+
+修复：
+
+- 不要把 `auth status` / `config` 当作主路径探活
+- 优先用真实业务命令判断：
+  - `base +base-get`
+  - `base +field-list`
+  - `base +record-get`
+
+### 7. 新建的是模板或副本，不是 workflow 使用的真实 Base
+
+原因：
+
+- 只拿到了页面链接，没有解析成真实 Base token
+
+修复：
+
+- 先解析 wiki / 页面链接
+- 确认真实 `base token`、`table id`、`record id`
+- 再决定是否切换 workflow 输入源
 
 ## 推荐验证命令
 
@@ -269,3 +402,9 @@ gh workflow run collab-acceptance-agent.yml \
 2. 新 workflow 形态接入后，补标准环境变量和步骤继承要求
 3. 新故障模式出现后，补“常见故障与修复”
 4. 新真实 E2E 成功后，补文档结论、案例编号与验证标准
+
+补充要求：
+
+- 若仓库侧新增了规范、故障手册或案例索引，本技能要把这些文档纳入“仓库真源”
+- 若飞书侧新增了新的运营消费入口，本技能要补最小目录与同步边界
+- 若未来内容增长，再拆多个技能；拆分前先保持本技能作为总入口
