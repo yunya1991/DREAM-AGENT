@@ -102,5 +102,17 @@ class AcceptanceWorkflowContractTests(unittest.TestCase):
         self.assertNotIn('"user_id": applicant_open_id,', text)
 
 
+class WorkflowRuntimeContractTests(unittest.TestCase):
+    def test_collab_workflows_force_node24_for_deprecated_js_actions(self):
+        acceptance = (
+            REPO_ROOT / ".github" / "workflows" / "collab-acceptance-agent.yml"
+        ).read_text(encoding="utf-8")
+        validator = (
+            REPO_ROOT / ".github" / "workflows" / "collab-validator-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true", acceptance)
+        self.assertIn("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true", validator)
+
+
 if __name__ == "__main__":
     unittest.main()
