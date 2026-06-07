@@ -6,6 +6,7 @@ import time
 REQUIRED_FIELDS = [
     "当前阻塞",
     "风险等级",
+    "当前状态",
     "approval_status",
     "OKR对齐",
     "目标负责人",
@@ -77,10 +78,7 @@ def build_workflow_specs(table_name, field_ids):
                             ],
                         },
                     ],
-                    trigger_control_list=[
-                        field_ids["当前阻塞"],
-                        field_ids["风险等级"],
-                    ],
+                    trigger_control_list=["当前阻塞", "风险等级"],
                 ),
                 {
                     "id": "notify_goal_owner",
@@ -118,12 +116,17 @@ def build_workflow_specs(table_name, field_ids):
                                 build_condition(
                                     "approval_status",
                                     "isAnyOf",
-                                    build_typed_values("approved", "rejected"),
+                                    build_typed_values(
+                                        "approved",
+                                        "rejected",
+                                        "timeout",
+                                        "executed",
+                                    ),
                                 )
                             ],
                         }
                     ],
-                    trigger_control_list=[field_ids["approval_status"]],
+                    trigger_control_list=["approval_status"],
                 ),
                 {
                     "id": "notify_after_approval",
@@ -158,11 +161,20 @@ def build_workflow_specs(table_name, field_ids):
                         {
                             "conjunction": "and",
                             "conditions": [
-                                build_condition("OKR对齐", "isEmpty")
+                                build_condition(
+                                    "当前状态",
+                                    "is",
+                                    build_typed_values("推进中"),
+                                ),
+                                build_condition(
+                                    "OKR对齐",
+                                    "isNot",
+                                    build_typed_values("已对齐"),
+                                ),
                             ],
                         }
                     ],
-                    trigger_control_list=[field_ids["OKR对齐"]],
+                    trigger_control_list=["当前状态", "OKR对齐"],
                 ),
                 {
                     "id": "notify_okr_owner",

@@ -13,6 +13,7 @@ MODULE = importlib.util.module_from_spec(SPEC)
 FIELDS = {
     "当前阻塞": "fld_blocker",
     "风险等级": "fld_risk",
+    "当前状态": "fld_status",
     "approval_status": "fld_approval",
     "OKR对齐": "fld_okr_align",
     "目标负责人": "fld_goal_owner_user",
@@ -52,7 +53,7 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
                         ],
                     }
                 ],
-                "trigger_control_list": [FIELDS["当前阻塞"], FIELDS["风险等级"]],
+                "trigger_control_list": ["当前阻塞", "风险等级"],
             },
             {
                 "condition_list": [
@@ -65,12 +66,14 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
                                 "value": [
                                     {"value": "approved", "value_type": "text"},
                                     {"value": "rejected", "value_type": "text"},
+                                    {"value": "timeout", "value_type": "text"},
+                                    {"value": "executed", "value_type": "text"},
                                 ],
                             }
                         ],
                     }
                 ],
-                "trigger_control_list": [FIELDS["approval_status"]],
+                "trigger_control_list": ["approval_status"],
             },
             {
                 "condition_list": [
@@ -78,14 +81,19 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
                         "conjunction": "and",
                         "conditions": [
                             {
+                                "field_name": "当前状态",
+                                "operator": "is",
+                                "value": [{"value": "推进中", "value_type": "text"}],
+                            },
+                            {
                                 "field_name": "OKR对齐",
-                                "operator": "isEmpty",
-                                "value": [],
+                                "operator": "isNot",
+                                "value": [{"value": "已对齐", "value_type": "text"}],
                             }
                         ],
                     }
                 ],
-                "trigger_control_list": [FIELDS["OKR对齐"]],
+                "trigger_control_list": ["当前状态", "OKR对齐"],
             },
         ]
         for workflow, expected_data in zip(workflows, expected_trigger_data):
@@ -114,6 +122,17 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
         SPEC.loader.exec_module(MODULE)
         with self.assertRaisesRegex(ValueError, "missing workflow fields"):
             MODULE.build_workflow_specs(table_name="目标推进表", field_ids={"当前阻塞": "fld_only"})
+
+    def test_current_status_is_required_for_okr_alignment_trigger(self):
+        SPEC.loader.exec_module(MODULE)
+        missing_current_status = dict(FIELDS)
+        missing_current_status.pop("当前状态")
+
+        with self.assertRaisesRegex(ValueError, "当前状态"):
+            MODULE.build_workflow_specs(
+                table_name="目标推进表",
+                field_ids=missing_current_status,
+            )
 
 
 if __name__ == "__main__":
