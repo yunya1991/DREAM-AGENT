@@ -158,6 +158,16 @@ class GovernanceUpdaterIOTests(unittest.TestCase):
         self.assertTrue(result["state_changed"])
 
 
+class CollaborationClosureStatusTests(unittest.TestCase):
+    def test_normalize_closure_status_fills_missing_layers(self):
+        task = {}
+        result = MODULE.normalize_closure_status(task)
+        self.assertEqual(result["implementation_status"], "planned")
+        self.assertEqual(result["platform_status"], "no_pr")
+        self.assertEqual(result["governance_status"], "draft")
+        self.assertEqual(result["automation_status"], "idle")
+
+
 class HybridRollbackRecordTests(unittest.TestCase):
     def test_task_template_exposes_rollback_fields(self):
         data = json.loads(

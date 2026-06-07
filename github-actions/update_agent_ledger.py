@@ -67,7 +67,16 @@ def normalize_version_anchor(anchor):
     }
 
 
+def normalize_closure_status(task):
+    task["implementation_status"] = task.get("implementation_status", "planned")
+    task["platform_status"] = task.get("platform_status", "no_pr")
+    task["governance_status"] = task.get("governance_status", "draft")
+    task["automation_status"] = task.get("automation_status", "idle")
+    return task
+
+
 def apply_status_transition(task, requested_status):
+    task = normalize_closure_status(task)
     task["version_anchor"] = normalize_version_anchor(task.get("version_anchor"))
     current_status = task.get("status")
     if current_status == requested_status:
