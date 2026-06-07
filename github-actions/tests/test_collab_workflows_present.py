@@ -48,6 +48,14 @@ class AcceptanceWorkflowContractTests(unittest.TestCase):
         self.assertIn("LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}", text)
         self.assertIn("LARKSUITE_CLI_STRICT_MODE: off", text)
         self.assertIn("tenant_access_token/internal", text)
+        self.assertIn(
+            'python3 github-actions/run_acceptance_cycle.py acceptance_cycle.json > acceptance_run.json',
+            text,
+        )
+        self.assertIn(
+            "      - name: Run acceptance cycle\n        env:\n          LARK_IDENTITY: bot\n          LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}\n          LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}\n          LARKSUITE_CLI_STRICT_MODE: off",
+            text,
+        )
 
 
 if __name__ == "__main__":
