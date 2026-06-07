@@ -147,7 +147,7 @@ created_at: 2026-05-20
 
 ### 2.2 2026-06-07 真实 E2E 结论
 
-`PR #7` 上已完成一轮真实 `workflow_dispatch` 联调，成功 run 为 `27085309457`，头提交为 `47d9432`。
+`PR #7` 上已完成真实 `workflow_dispatch` 联调。首个全链路成功 run 为 `27085309457`（头提交 `47d9432`），后续修复 `work_item_title` 摘要字段后的验证 run 为 `27085416975`（头提交 `09d5815`）。
 
 本轮已真实打通以下链路：
 
@@ -171,6 +171,7 @@ created_at: 2026-05-20
 - GitHub 仍是正式验收真源
 - 飞书 bot 已成为 runner 里的稳定上下文读取身份
 - `Acceptance Orchestration V2` 已完成一次真实 PR 评论驱动 E2E 闭环验证
+- `VALIDATION_RESULT` 的 `Context Snapshot` 已能回写真实 `work_item_title`
 
 ## 3. Role-Specific Norms
 
