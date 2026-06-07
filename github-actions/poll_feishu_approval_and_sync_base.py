@@ -55,8 +55,10 @@ def poll_and_sync(payload):
         )
     )
     task_record = SYNC.build_feishu_record(task_updates)
+    # The goal builder owns the payload shape; keep upstream fields intact here.
+    goal_payload = payload["goal_payload"]
     goal_record = GOAL.build_goal_record(
-        payload["goal_payload"],
+        goal_payload,
         [task_updates, *payload["sibling_tasks"]],
     )
 

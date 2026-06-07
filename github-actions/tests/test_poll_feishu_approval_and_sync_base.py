@@ -107,6 +107,60 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
         self.assertEqual(task_fields["审批决策ID"], "task-2")
         self.assertEqual(task_fields["任务ID"], "task-2")
 
+    @patch.object(POLL.APPROVAL_API, "get_instance")
+    @patch.object(POLL, "upsert_base_record")
+    def test_goal_writeback_contains_boss_view_fields(self, mock_upsert, mock_get_instance):
+        mock_get_instance.return_value = {"status": "APPROVED"}
+        mock_upsert.side_effect = [{"record_id": "rec_task"}, {"record_id": "rec_goal"}]
+        goal_payload = {
+            "goal_id": "goal-3",
+            "goal_name": "老板视图联动",
+            "goal_owner": "governance-agent",
+            "next_milestone": "创建 workflow",
+            "okr_objective_id": "obj-3",
+            "okr_objective_title": "联动老板视图",
+            "okr_owner": "boss-owner",
+        }
+
+        with patch.object(
+            POLL.GOAL,
+            "build_goal_record",
+            wraps=POLL.GOAL.build_goal_record,
+        ) as mock_build_goal:
+            result = POLL.poll_and_sync(
+                {
+                    "tenant_access_token": "tenant-token",
+                    "approval_instance_code": "instance-3",
+                    "task_payload": {
+                        "task_id": "task-3",
+                        "task_name": "Boss View",
+                        "goal_id": "goal-3",
+                        "approval_decision_id": "task-3",
+                        "decision_summary": "approved_and_resume",
+                    },
+                    "goal_payload": goal_payload,
+                    "sibling_tasks": [],
+                    "base_sync": {
+                        "base_token": "app_base",
+                        "task_table_id": "tbl_task",
+                        "task_record_id": "rec_task",
+                        "goal_table_id": "tbl_goal",
+                        "goal_record_id": "rec_goal",
+                    },
+                }
+            )
+
+        written_goal_fields = mock_upsert.call_args_list[1].args[3]
+        self.assertIs(mock_build_goal.call_args.args[0], goal_payload)
+        self.assertEqual(result["goal_record"]["目标名称"], "老板视图联动")
+        self.assertEqual(result["goal_record"]["当前状态"], "推进中")
+        self.assertEqual(result["goal_record"]["下一步动作"], "创建 workflow")
+        self.assertEqual(result["goal_record"]["OKR对齐"], "已对齐")
+        self.assertEqual(result["goal_record"]["workflow_signal"], "healthy")
+        self.assertEqual(written_goal_fields["目标名称"], "老板视图联动")
+        self.assertEqual(written_goal_fields["OKR对齐"], "已对齐")
+        self.assertEqual(written_goal_fields["workflow_signal"], "healthy")
+
 
 if __name__ == "__main__":
     unittest.main()
