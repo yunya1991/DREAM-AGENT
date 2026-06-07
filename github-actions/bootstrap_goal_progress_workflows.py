@@ -23,13 +23,29 @@ def build_ref(trigger_id, field_id):
     return f"$.{trigger_id}.{field_id}"
 
 
-def build_change_record_trigger(step_id, title, next_step, table_name, condition_list):
+def build_typed_values(*values):
+    return [{"value": value, "value_type": "text"} for value in values]
+
+
+def build_condition(field_name, operator, value=None):
+    if value is None:
+        value = []
+    return {"field_name": field_name, "operator": operator, "value": value}
+
+
+def build_change_record_trigger(
+    step_id, title, next_step, table_name, condition_list, trigger_control_list
+):
     return {
         "id": step_id,
         "type": "ChangeRecordTrigger",
         "title": title,
         "next": next_step,
-        "data": {"table_name": table_name, "condition_list": condition_list},
+        "data": {
+            "table_name": table_name,
+            "condition_list": condition_list,
+            "trigger_control_list": trigger_control_list,
+        },
     }
 
 
@@ -50,15 +66,20 @@ def build_workflow_specs(table_name, field_ids):
                     table_name=table_name,
                     condition_list=[
                         {
-                            "field_id": field_ids["当前阻塞"],
-                            "operator": "is_not_empty",
-                            "value": "",
+                            "conjunction": "and",
+                            "conditions": [
+                                build_condition("当前阻塞", "isNotEmpty"),
+                                build_condition(
+                                    "风险等级",
+                                    "is",
+                                    build_typed_values("high"),
+                                ),
+                            ],
                         },
-                        {
-                            "field_id": field_ids["风险等级"],
-                            "operator": "is",
-                            "value": "high",
-                        },
+                    ],
+                    trigger_control_list=[
+                        field_ids["当前阻塞"],
+                        field_ids["风险等级"],
                     ],
                 ),
                 {
@@ -92,11 +113,17 @@ def build_workflow_specs(table_name, field_ids):
                     table_name=table_name,
                     condition_list=[
                         {
-                            "field_id": field_ids["approval_status"],
-                            "operator": "is_any_of",
-                            "value": ["approved", "rejected"],
+                            "conjunction": "and",
+                            "conditions": [
+                                build_condition(
+                                    "approval_status",
+                                    "isAnyOf",
+                                    build_typed_values("approved", "rejected"),
+                                )
+                            ],
                         }
                     ],
+                    trigger_control_list=[field_ids["approval_status"]],
                 ),
                 {
                     "id": "notify_after_approval",
@@ -129,11 +156,13 @@ def build_workflow_specs(table_name, field_ids):
                     table_name=table_name,
                     condition_list=[
                         {
-                            "field_id": field_ids["OKR对齐"],
-                            "operator": "is_empty",
-                            "value": "",
+                            "conjunction": "and",
+                            "conditions": [
+                                build_condition("OKR对齐", "isEmpty")
+                            ],
                         }
                     ],
+                    trigger_control_list=[field_ids["OKR对齐"]],
                 ),
                 {
                     "id": "notify_okr_owner",

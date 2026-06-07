@@ -29,28 +29,72 @@ class BootstrapGoalProgressWorkflowsTests(unittest.TestCase):
         self.assertEqual(workflows[1]["title"], "审批完成提醒更新目标")
         self.assertEqual(workflows[2]["title"], "OKR对齐缺失提醒")
 
-    def test_change_record_triggers_include_condition_list(self):
+    def test_change_record_triggers_match_live_condition_schema(self):
         SPEC.loader.exec_module(MODULE)
         workflows = MODULE.build_workflow_specs(table_name="目标推进表", field_ids=FIELDS)
 
-        expected_fields_by_workflow = [
-            {FIELDS["当前阻塞"], FIELDS["风险等级"]},
-            {FIELDS["approval_status"]},
-            {FIELDS["OKR对齐"]},
+        expected_trigger_data = [
+            {
+                "condition_list": [
+                    {
+                        "conjunction": "and",
+                        "conditions": [
+                            {
+                                "field_name": "当前阻塞",
+                                "operator": "isNotEmpty",
+                                "value": [],
+                            },
+                            {
+                                "field_name": "风险等级",
+                                "operator": "is",
+                                "value": [{"value": "high", "value_type": "text"}],
+                            },
+                        ],
+                    }
+                ],
+                "trigger_control_list": [FIELDS["当前阻塞"], FIELDS["风险等级"]],
+            },
+            {
+                "condition_list": [
+                    {
+                        "conjunction": "and",
+                        "conditions": [
+                            {
+                                "field_name": "approval_status",
+                                "operator": "isAnyOf",
+                                "value": [
+                                    {"value": "approved", "value_type": "text"},
+                                    {"value": "rejected", "value_type": "text"},
+                                ],
+                            }
+                        ],
+                    }
+                ],
+                "trigger_control_list": [FIELDS["approval_status"]],
+            },
+            {
+                "condition_list": [
+                    {
+                        "conjunction": "and",
+                        "conditions": [
+                            {
+                                "field_name": "OKR对齐",
+                                "operator": "isEmpty",
+                                "value": [],
+                            }
+                        ],
+                    }
+                ],
+                "trigger_control_list": [FIELDS["OKR对齐"]],
+            },
         ]
-        for workflow, expected_field_ids in zip(workflows, expected_fields_by_workflow):
+        for workflow, expected_data in zip(workflows, expected_trigger_data):
             trigger = workflow["steps"][0]
             self.assertEqual(trigger["type"], "ChangeRecordTrigger")
-            self.assertIn("condition_list", trigger["data"])
-            self.assertTrue(trigger["data"]["condition_list"])
-            for condition in trigger["data"]["condition_list"]:
-                self.assertIn("field_id", condition)
-                self.assertIn("operator", condition)
-                self.assertIn("value", condition)
-            self.assertTrue(
-                expected_field_ids.issubset(
-                    {condition["field_id"] for condition in trigger["data"]["condition_list"]}
-                )
+            self.assertEqual(trigger["data"]["condition_list"], expected_data["condition_list"])
+            self.assertEqual(
+                trigger["data"]["trigger_control_list"],
+                expected_data["trigger_control_list"],
             )
 
     def test_message_receivers_reference_own_trigger_step(self):
