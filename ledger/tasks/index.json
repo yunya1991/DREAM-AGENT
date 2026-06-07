@@ -1731,7 +1731,21 @@
         "交易信号 → Hub 决策 → Trading 执行 形成实时闭环",
         "新增 /api/trading/* 路由在 Hub 侧直接桥接 Python 进程或子进程调用",
         "三个独立前端页面均可实时展示交易状态变化"
-      ]
+      ],
+      "unit_id": "",
+      "feishu_asset_mode": "full-sync",
+      "version_anchor": {
+        "git_commit_before": "",
+        "git_branch_or_pr_ref": "",
+        "workflow_run_id": "",
+        "acceptance_request_id": "",
+        "feishu_asset_before_snapshot": ""
+      },
+      "rollback_strategy": {
+        "default_level": "unit",
+        "trigger": [],
+        "owner": ""
+      }
     }
   ],
   "last_updated": "2026-05-19T00:00:00.000Z",

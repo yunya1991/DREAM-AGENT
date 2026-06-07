@@ -52,6 +52,42 @@ class GovernanceTaskTemplateTests(unittest.TestCase):
             self.assertIn(key, data)
 
 
+class HybridUnitTemplateTests(unittest.TestCase):
+    def test_hybrid_unit_template_exposes_dispatch_and_rollback_fields(self):
+        data = json.loads(
+            (ROOT / "ledger" / "templates" / "hybrid-unit-record.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        required = [
+            "unit_id",
+            "track",
+            "frontend_surface",
+            "platform_capability",
+            "acceptance_target",
+            "collaboration_asset_surface",
+            "feishu_asset_mode",
+            "version_anchor",
+            "rollback_strategy",
+        ]
+        for key in required:
+            self.assertIn(key, data)
+
+    def test_task_template_includes_hybrid_dispatch_fields(self):
+        data = json.loads(
+            (ROOT / "ledger" / "templates" / "task-record.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        for key in [
+            "unit_id",
+            "feishu_asset_mode",
+            "version_anchor",
+            "rollback_strategy",
+        ]:
+            self.assertIn(key, data)
+
+
 class GovernanceClosureTests(unittest.TestCase):
     def test_builds_governance_closure_record(self):
         closure = MODULE.build_governance_closure(
