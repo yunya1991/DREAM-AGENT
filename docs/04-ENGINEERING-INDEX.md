@@ -7,14 +7,14 @@ depends:
   - 01-COLLABORATION-PROTOCOL
   - 02-ARCHITECTURE
 version: 4
-last_verified: 2026-06-07
+last_verified: 2026-06-08
 ---
 
 # Engineering Index
 
 > Status: active  
 > Purpose: quickly locate the correct file to change  
-> Last updated: 2026-06-07
+> Last updated: 2026-06-08
 
 ## 1. Directories
 
@@ -79,6 +79,15 @@ last_verified: 2026-06-07
 
 - 设计：`docs/superpowers/specs/2026-06-07-feishu-goal-driven-progress-and-risk-approval-design.md`
 - 计划：`docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md`
+
+### 飞书审批成功闭环 / 真实 smoke
+
+- 设计：`docs/superpowers/specs/2026-06-08-feishu-approval-success-closure-design.md`
+- 计划：`docs/superpowers/plans/2026-06-08-feishu-approval-success-closure-implementation.md`
+- 成功记录：`README.md` 中的 `Feishu Approval Real Smoke Status`
+- 关键坑点：审批请求里的 `form` 必须是 JSON 字符串，申请人 `ou_...` 必须走 `open_id`
+- Node24 兼容处理：`.github/workflows/collab-acceptance-agent.yml`、`.github/workflows/collab-validator-agent.yml`
+- 运行时校验：`github-actions/tests/test_collab_workflows_present.py`
 
 ## 3. Gate Evidence Checklist (Where to Look)
 
