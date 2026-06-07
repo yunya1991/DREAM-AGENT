@@ -26,7 +26,7 @@ def ensure_lark_auth(identity: str = "user") -> None:
         )
     except subprocess.CalledProcessError as exc:
         output = f"{exc.output or ''}\n{exc.stderr or ''}".lower()
-        if exc.returncode in (2, 3) and not output.strip():
+        if exc.returncode in (2, 3):
             return
         if (
             "external credentials" not in output

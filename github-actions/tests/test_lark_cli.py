@@ -55,6 +55,19 @@ class LarkCliTests(unittest.TestCase):
 
         LARK_CLI.ensure_lark_auth(identity="user")
 
+    @mock.patch.object(LARK_CLI.subprocess, "run")
+    def test_ensure_lark_auth_allows_external_management_exit_code_with_unexpected_output(
+        self, mock_run
+    ):
+        mock_run.side_effect = subprocess.CalledProcessError(
+            3,
+            ["lark-cli", "auth", "status"],
+            output='{"ok": false}',
+            stderr="runner-managed credentials",
+        )
+
+        LARK_CLI.ensure_lark_auth(identity="user")
+
 
 if __name__ == "__main__":
     unittest.main()
