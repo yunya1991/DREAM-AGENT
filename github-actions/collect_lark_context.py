@@ -65,6 +65,19 @@ def get_key_result(key_result_id: str, identity: str = "user") -> dict:
     return payload["data"]["key_result"]
 
 
+def summarize_work_item(fields: dict) -> str:
+    for key in ("Title", "任务", "Name", "名称"):
+        value = fields.get(key, "")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+
+    for value in fields.values():
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+
+    return ""
+
+
 def collect_context_snapshot(cycle: dict) -> dict:
     locator = cycle["lark_context_locator"]
     identity = get_lark_identity()
@@ -88,7 +101,7 @@ def collect_context_snapshot(cycle: dict) -> dict:
         },
         "objective": objective,
         "key_result": key_result,
-        "context_summary": fields.get("Title", ""),
+        "context_summary": summarize_work_item(fields),
     }
 
 

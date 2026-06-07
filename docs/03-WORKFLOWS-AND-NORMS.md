@@ -145,6 +145,33 @@ created_at: 2026-05-20
 - GitHub `VALIDATION_RESULT` 是正式验收真源
 - 飞书只允许回写摘要字段，不允许回写正式主结论字段
 
+### 2.2 2026-06-07 真实 E2E 结论
+
+`PR #7` 上已完成一轮真实 `workflow_dispatch` 联调，成功 run 为 `27085309457`，头提交为 `47d9432`。
+
+本轮已真实打通以下链路：
+
+1. `ACCEPTANCE_REQUEST` 解析
+2. `acceptance_cycle` 创建 / 加载
+3. 飞书开发者应用 / bot 方式 mint `tenant_access_token`
+4. 使用 `lark-cli --as bot` 读取真实 Base record
+5. 运行串行 4 角色 `acceptance cycle`
+6. GitHub 回写正式 `VALIDATION_RESULT`
+
+本轮收口出的运行约束：
+
+- runner 中不得依赖交互式 `user` 登录态
+- `lark-cli` 外部凭据模式必须通过环境变量注入
+- workflow 需要先调用 `tenant_access_token/internal` 获取 `tenant_access_token`
+- 所有会再次读取飞书上下文的步骤都必须继承同一组 bot 环境变量
+- `work_item_title` 不得只依赖 `Title` 字段，需兼容真实多维表格中的 `任务` 字段
+
+当前结论：
+
+- GitHub 仍是正式验收真源
+- 飞书 bot 已成为 runner 里的稳定上下文读取身份
+- `Acceptance Orchestration V2` 已完成一次真实 PR 评论驱动 E2E 闭环验证
+
 ## 3. Role-Specific Norms
 
 ### 3.1 Ledger/Protocol AGENT

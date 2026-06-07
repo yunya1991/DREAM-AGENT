@@ -210,6 +210,42 @@ class CollectLarkContextTests(unittest.TestCase):
         self.assertEqual(snapshot["key_result"]["id"], "kr1")
         self.assertEqual(snapshot["context_summary"], "Pilot item")
 
+    @mock.patch.object(MODULE, "ensure_lark_auth")
+    @mock.patch.object(MODULE, "run_lark_json")
+    def test_collect_context_uses_task_field_as_summary_when_title_is_absent(
+        self,
+        mock_run,
+        mock_auth,
+    ):
+        mock_run.side_effect = [
+            {
+                "data": {
+                    "data": [
+                        ["收集、整合用户反馈", "obj1", "kr1"],
+                    ],
+                    "fields": ["任务", "Objective ID", "KR ID"],
+                    "record_id_list": ["rec789"],
+                },
+            },
+            {"data": {"objective": {"id": "obj1"}}},
+            {"data": {"key_result": {"id": "kr1"}}},
+        ]
+
+        snapshot = MODULE.collect_context_snapshot(
+            {
+                "work_item_id": "WI-123",
+                "lark_context_locator": {
+                    "base_url": "https://example.feishu.cn/base/app123?table=tbl456",
+                    "table_id": "tbl456",
+                    "record_id": "rec789",
+                },
+            }
+        )
+
+        mock_auth.assert_called_once_with(identity="user")
+        self.assertEqual(snapshot["work_item"]["fields"]["任务"], "收集、整合用户反馈")
+        self.assertEqual(snapshot["context_summary"], "收集、整合用户反馈")
+
     @mock.patch.object(MODULE, "collect_context_snapshot")
     def test_main_reads_cycle_file_and_prints_context_json(self, mock_collect):
         mock_collect.return_value = {
