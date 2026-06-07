@@ -67,6 +67,34 @@ class RunAcceptanceCycleTests(unittest.TestCase):
         self.assertEqual(
             result["lark_summary_patch"]["fields"]["Acceptance Status"], "accepted"
         )
+        self.assertIn("- objective_id=obj1", result["comment_body"])
+        self.assertIn("- key_result_id=kr1", result["comment_body"])
+
+    def test_build_validation_result_comment_renders_okr_summary_when_available(self):
+        comment = MODULE.build_validation_result_comment(
+            cycle={
+                "acceptance_cycle_id": "ac-20260607-001",
+                "linked_prs": ["7"],
+            },
+            validation_result={
+                "decision": "ACCEPTED",
+                "acceptance_request_id": "ar-20260607-006",
+                "protocol_read_result": "PASS",
+                "source_of_truth_verdict": "usable",
+                "reason_codes": ["NONE"],
+                "recommended_next_action": "validator: post VALIDATION_RESULT",
+            },
+            context_snapshot={
+                "context_summary": "Pilot item",
+                "objective": {"id": "obj1", "name": "Improve collaboration"},
+                "key_result": {"id": "kr1", "name": "Reduce reruns"},
+            },
+        )
+
+        self.assertIn("- objective_id=obj1", comment)
+        self.assertIn("- objective_title=Improve collaboration", comment)
+        self.assertIn("- key_result_id=kr1", comment)
+        self.assertIn("- key_result_title=Reduce reruns", comment)
 
     @mock.patch.object(MODULE, "collect_context_snapshot")
     @mock.patch.object(MODULE, "evaluate_acceptance_request")

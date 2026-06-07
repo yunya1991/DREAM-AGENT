@@ -18,6 +18,45 @@ def ensure_validation_result_identifiers(cycle: dict, validation_result: dict) -
     return result
 
 
+def first_non_empty_value(data: dict, keys: tuple[str, ...]) -> str:
+    for key in keys:
+        value = data.get(key, "")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def build_context_snapshot_lines(cycle: dict, context_snapshot: dict) -> list[str]:
+    lines = [
+        f"- work_item_title={context_snapshot.get('context_summary', '')}",
+        f"- pr_number={cycle['linked_prs'][0] if cycle.get('linked_prs') else ''}",
+    ]
+
+    objective = context_snapshot.get("objective") or {}
+    objective_id = first_non_empty_value(objective, ("id",))
+    objective_title = first_non_empty_value(
+        objective,
+        ("name", "title", "objective_title"),
+    )
+    if objective_id:
+        lines.append(f"- objective_id={objective_id}")
+    if objective_title:
+        lines.append(f"- objective_title={objective_title}")
+
+    key_result = context_snapshot.get("key_result") or {}
+    key_result_id = first_non_empty_value(key_result, ("id",))
+    key_result_title = first_non_empty_value(
+        key_result,
+        ("name", "title", "key_result_title"),
+    )
+    if key_result_id:
+        lines.append(f"- key_result_id={key_result_id}")
+    if key_result_title:
+        lines.append(f"- key_result_title={key_result_title}")
+
+    return lines
+
+
 def build_validation_result_comment(
     cycle: dict,
     validation_result: dict,
@@ -54,9 +93,8 @@ def build_validation_result_comment(
         "Governance Handoff: pending",
         "",
         "Context Snapshot:",
-        f"- work_item_title={context_snapshot['context_summary']}",
-        f"- pr_number={cycle['linked_prs'][0] if cycle.get('linked_prs') else ''}",
     ]
+    lines.extend(build_context_snapshot_lines(cycle, context_snapshot))
     return "\n".join(lines) + "\n"
 
 

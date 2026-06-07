@@ -47,6 +47,7 @@ status: "draft"
 - 已写入的 GitHub secrets
 - 已接线的 workflow
 - 至少一条成功的真实 E2E run 记录
+- 若涉及 OKR，则 `VALIDATION_RESULT` 中可见对应 objective / key result 摘要
 
 ## 标准流程
 
@@ -67,8 +68,11 @@ status: "draft"
 4. 如 workflow 需要更多能力，再按需开通：
    - `base:record:retrieve`
    - `base:app:read`
-   - 其他 OKR / 文档权限
+   - `okr:objective:read`
+   - `okr:key_result:read`
+   - 其他文档权限
 5. 在飞书侧确认目标 Base 已对该应用授权
+6. 若需要读取 OKR，确认 bot 对目标 Objective / KR 所在对象也有访问权限
 
 ## Phase 3. GitHub Secrets 接线
 
@@ -118,8 +122,10 @@ status: "draft"
 2. `acceptance_cycle` 能创建或加载
 3. workflow 能 mint `tenant_access_token`
 4. `collect_lark_context.py` 能读取真实 Base record
-5. `run_acceptance_cycle.py` 中再次读取飞书上下文时仍继承 bot 身份
-6. PR 能收到正式 `VALIDATION_RESULT`
+5. 如配置了 `Objective ID / KR ID`，bot 能读取真实 OKR 对象
+6. `run_acceptance_cycle.py` 中再次读取飞书上下文时仍继承 bot 身份
+7. PR 能收到正式 `VALIDATION_RESULT`
+8. 如存在 OKR，上述评论的 `Context Snapshot` 中能看到 objective / key result 摘要
 
 ## 常见故障与修复
 
@@ -222,6 +228,7 @@ gh workflow run collab-acceptance-agent.yml \
   - `Run acceptance cycle` 成功
   - `Post VALIDATION_RESULT comment` 成功
 - PR 中出现正式 `VALIDATION_RESULT`
+- 如联调场景包含 OKR，`VALIDATION_RESULT` 的 `Context Snapshot` 中能看到 `objective_id` / `key_result_id` 与可读标题
 
 ## 产出沉淀要求
 
@@ -236,3 +243,11 @@ gh workflow run collab-acceptance-agent.yml \
    - 已打通链路
    - 仍待优化项
 
+## 技能演进规则
+
+每次出现新的 GitHub x 飞书协作任务后，都应评估是否把新增能力回补到本技能。最少遵守以下规则：
+
+1. 新对象类型接入后，补输入清单、权限清单、验证命令
+2. 新 workflow 形态接入后，补标准环境变量和步骤继承要求
+3. 新故障模式出现后，补“常见故障与修复”
+4. 新真实 E2E 成功后，补文档结论、案例编号与验证标准

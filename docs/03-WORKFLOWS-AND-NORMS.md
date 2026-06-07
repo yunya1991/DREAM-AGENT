@@ -172,6 +172,7 @@ created_at: 2026-05-20
 - 飞书 bot 已成为 runner 里的稳定上下文读取身份
 - `Acceptance Orchestration V2` 已完成一次真实 PR 评论驱动 E2E 闭环验证
 - `VALIDATION_RESULT` 的 `Context Snapshot` 已能回写真实 `work_item_title`
+- 若上下文中存在 `objective` / `key_result`，`VALIDATION_RESULT` 的 `Context Snapshot` 也必须显式呈现 OKR 摘要字段
 
 ## 3. Role-Specific Norms
 
