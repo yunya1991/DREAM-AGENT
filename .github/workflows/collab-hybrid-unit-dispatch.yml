@@ -1,0 +1,45 @@
+name: collab-hybrid-unit-dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Target PR number"
+        required: true
+        type: string
+      task_id:
+        description: "Ledger task id"
+        required: true
+        type: string
+      unit_id:
+        description: "Hybrid unit id"
+        required: true
+        type: string
+
+jobs:
+  dispatch:
+    runs-on: [self-hosted, macOS, workbuddy]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Build dispatch payload
+        run: |
+          python3 github-actions/build_hybrid_unit_dispatch_payload.py < ledger/templates/hybrid-unit-record.json > hybrid_dispatch_payload.json
+
+      - name: Check dispatch payload
+        run: |
+          python3 github-actions/check_hybrid_unit_dispatch.py < hybrid_dispatch_payload.json > hybrid_dispatch_check.json
+          python3 - <<'PY'
+          import json
+          with open("hybrid_dispatch_check.json", encoding="utf-8") as fh:
+              data = json.load(fh)
+          if data["decision"] != "PASS":
+              raise SystemExit(1)
+          PY
+
+      - name: Build dispatch plan
+        run: |
+          python3 github-actions/run_hybrid_unit_dispatch.py < hybrid_dispatch_payload.json > hybrid_dispatch_plan.json
