@@ -213,6 +213,34 @@ class GovernanceTemplateFieldTests(unittest.TestCase):
         self.assertIn("Execution Mode:", pr_template)
         self.assertIn("Direct Takeover:", pr_template)
 
+    def test_closure_templates_surface_four_status_layers(self):
+        updated = (ROOT / "templates" / "pr-comment-updated.md").read_text(
+            encoding="utf-8"
+        )
+        validation = (
+            ROOT / "templates" / "pr-comment-validation-result.md"
+        ).read_text(encoding="utf-8")
+        handoff = (
+            ROOT / "templates" / "pr-comment-governance-handoff.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Implementation Status:", updated)
+        self.assertIn("Platform Status:", updated)
+        self.assertIn("Governance Status:", updated)
+        self.assertIn("Automation Status:", updated)
+
+        self.assertIn("Implementation Status:", validation)
+        self.assertIn("Platform Status:", validation)
+        self.assertIn("Validation Decision:", validation)
+        self.assertIn("Governance Recommendation:", validation)
+
+        self.assertIn("[治理移交 / GOVERNANCE_HANDOFF]", handoff)
+        self.assertIn("Implementation Status:", handoff)
+        self.assertIn("Platform Status:", handoff)
+        self.assertIn("Governance Status:", handoff)
+        self.assertIn("Automation Status:", handoff)
+        self.assertIn("Release Decision:", handoff)
+
 
 if __name__ == "__main__":
     unittest.main()

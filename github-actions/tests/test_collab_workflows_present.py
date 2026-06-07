@@ -23,6 +23,20 @@ class AcceptanceWorkflowPresenceTests(unittest.TestCase):
         self.assertTrue(workflow.exists(), str(workflow))
 
 
+class GovernanceWorkflowContractTests(unittest.TestCase):
+    def test_governance_workflow_runs_closure_builder_and_checker(self):
+        text = (
+            REPO_ROOT / ".github" / "workflows" / "collab-governance-agent.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Build collaboration closure payload", text)
+        self.assertIn(
+            "python3 github-actions/build_collaboration_closure_payload.py",
+            text,
+        )
+        self.assertIn("Check collaboration closure", text)
+        self.assertIn("python3 github-actions/check_collaboration_closure.py", text)
+
+
 class AcceptanceWorkflowContractTests(unittest.TestCase):
     def test_acceptance_workflow_uses_cycle_and_lark_scripts(self):
         text = (

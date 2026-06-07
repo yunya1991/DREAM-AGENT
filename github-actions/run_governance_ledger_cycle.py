@@ -19,6 +19,12 @@ BUILDER = load_module(
     "build_agent_collaboration_payload", "build_agent_collaboration_payload.py"
 )
 CHECKER = load_module("check_agent_collaboration", "check_agent_collaboration.py")
+CLOSURE_BUILDER = load_module(
+    "build_collaboration_closure_payload", "build_collaboration_closure_payload.py"
+)
+CLOSURE_CHECKER = load_module(
+    "check_collaboration_closure", "check_collaboration_closure.py"
+)
 UPDATER = load_module("update_agent_ledger", "update_agent_ledger.py")
 
 
@@ -89,6 +95,23 @@ def run_cycle(raw, task_index_path, reward_index_path):
             "knowledge_sync_written": False,
             "next_required_action": checker_result.get("recommended_next_action", ""),
             "repair_hint": "fix blocking governance signal before retrying",
+        }
+
+    closure_payload = CLOSURE_BUILDER.build_payload(raw)
+    closure_payload["task_id"] = closure_payload.get("task_id") or task_id
+    closure_result = CLOSURE_CHECKER.evaluate_payload(closure_payload)
+    if closure_result.get("decision") != "PASS":
+        return {
+            "task_id": task_id,
+            "decision": "BLOCK",
+            "reason_codes": closure_result.get("reason_codes", []),
+            "previous_status": task.get("status", ""),
+            "new_status": task.get("status", ""),
+            "state_changed": False,
+            "reward_written": False,
+            "knowledge_sync_written": False,
+            "next_required_action": "governance: resolve platform/checks mismatch",
+            "repair_hint": "do not release governance when checks are not green",
         }
 
     updated_task, transition = UPDATER.apply_status_transition(
