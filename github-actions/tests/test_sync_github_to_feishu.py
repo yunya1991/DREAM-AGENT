@@ -29,6 +29,34 @@ class SyncGithubToFeishuTests(unittest.TestCase):
         self.assertEqual(record["治理状态"], "review_required")
         self.assertEqual(record["自动化状态"], "running")
 
+    def test_build_feishu_record_includes_goal_and_approval_fields(self):
+        SPEC.loader.exec_module(MODULE)
+        record = MODULE.build_feishu_record(
+            {
+                "task_id": "task-approval-001",
+                "task_name": "风险审批样例任务",
+                "goal_id": "goal-collab-001",
+                "repo": "yunya1991/DREAM-AGENT",
+                "branch": "feature/risk-approval",
+                "pr_number": "9",
+                "implementation_status": "implemented",
+                "platform_status": "checks_pending",
+                "governance_status": "review_required",
+                "automation_status": "running",
+                "risk_level": "high",
+                "approval_status": "pending",
+                "approval_decision_id": "decision-001",
+                "approval_due_at": "2026-06-07T16:00:00Z",
+                "decision_summary": "waiting_for_choice",
+            }
+        )
+        self.assertEqual(record["目标ID"], "goal-collab-001")
+        self.assertEqual(record["风险等级"], "high")
+        self.assertEqual(record["审批状态"], "pending")
+        self.assertEqual(record["审批决策ID"], "decision-001")
+        self.assertEqual(record["审批截止时间"], "2026-06-07T16:00:00Z")
+        self.assertEqual(record["决策摘要"], "waiting_for_choice")
+
 
 if __name__ == "__main__":
     unittest.main()

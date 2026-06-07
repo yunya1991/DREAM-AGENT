@@ -168,6 +168,18 @@ class CollaborationClosureStatusTests(unittest.TestCase):
         self.assertEqual(result["automation_status"], "idle")
 
 
+class GoalApprovalStatusDefaultsTests(unittest.TestCase):
+    def test_normalize_closure_status_fills_goal_and_approval_defaults(self):
+        task = {}
+        result = MODULE.normalize_closure_status(task)
+        self.assertEqual(result["goal_id"], "")
+        self.assertEqual(result["risk_level"], "low")
+        self.assertEqual(result["approval_status"], "not_required")
+        self.assertEqual(result["approval_decision_id"], "")
+        self.assertEqual(result["approval_due_at"], "")
+        self.assertEqual(result["decision_summary"], "")
+
+
 class HybridRollbackRecordTests(unittest.TestCase):
     def test_task_template_exposes_rollback_fields(self):
         data = json.loads(

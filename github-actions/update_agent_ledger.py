@@ -72,6 +72,12 @@ def normalize_closure_status(task):
     task["platform_status"] = task.get("platform_status", "no_pr")
     task["governance_status"] = task.get("governance_status", "draft")
     task["automation_status"] = task.get("automation_status", "idle")
+    task["goal_id"] = task.get("goal_id", "")
+    task["risk_level"] = task.get("risk_level", "low")
+    task["approval_status"] = task.get("approval_status", "not_required")
+    task["approval_decision_id"] = task.get("approval_decision_id", "")
+    task["approval_due_at"] = task.get("approval_due_at", "")
+    task["decision_summary"] = task.get("decision_summary", "")
     return task
 
 
