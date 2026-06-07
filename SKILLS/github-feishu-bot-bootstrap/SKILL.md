@@ -195,6 +195,7 @@ status: "draft"
   - `objective_title`
   - `key_result_id`
   - `key_result_title`
+- 如果连回退输出的原始 `objective_id` / `key_result_id` 都没有出现，优先判断为 Base record 本身未填写 OKR 关联字段，而不是代码渲染失败
 
 ## 推荐验证命令
 
