@@ -42,6 +42,19 @@ class LarkCliTests(unittest.TestCase):
             text=True,
         )
 
+    @mock.patch.object(LARK_CLI.subprocess, "run")
+    def test_ensure_lark_auth_allows_external_management_exit_code_without_message(
+        self, mock_run
+    ):
+        mock_run.side_effect = subprocess.CalledProcessError(
+            3,
+            ["lark-cli", "auth", "status"],
+            output="",
+            stderr="",
+        )
+
+        LARK_CLI.ensure_lark_auth(identity="user")
+
 
 if __name__ == "__main__":
     unittest.main()
