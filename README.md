@@ -88,6 +88,8 @@ last_verified: 2026-05-20
 - [docs/agent-collaboration-system-v1-governance-cycle-implementation-plan.md](docs/agent-collaboration-system-v1-governance-cycle-implementation-plan.md)：治理账本最小闭环控制器实施计划
 - `docs/superpowers/specs/2026-06-07-dream-agent-hybrid-unit-dispatch-design.md`：混合单元编排、飞书一级正式能力、回滚模型
 - `docs/superpowers/plans/2026-06-07-dream-agent-hybrid-unit-dispatch-implementation.md`：对应实施计划
+- `docs/superpowers/specs/2026-06-07-github-feishu-collaboration-closure-repair-design.md`：GitHub checks、治理结论与飞书监控闭环修复设计
+- `docs/superpowers/plans/2026-06-07-github-feishu-collaboration-closure-repair-implementation.md`：对应实施计划
 
 原 `docs/superpowers/` 下的对应文档当前保留兼容壳，用于承接历史链接与旧 PR 讨论。
 

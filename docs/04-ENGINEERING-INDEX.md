@@ -70,6 +70,11 @@ last_verified: 2026-06-07
 - 计划：`docs/superpowers/plans/2026-06-07-dream-agent-hybrid-unit-dispatch-implementation.md`
 - 样板单元：`task-strategy-mainline-ticket-001`
 
+### 2.x GitHub x 飞书协作闭环修复
+
+- 设计：`docs/superpowers/specs/2026-06-07-github-feishu-collaboration-closure-repair-design.md`
+- 计划：`docs/superpowers/plans/2026-06-07-github-feishu-collaboration-closure-repair-implementation.md`
+
 ## 3. Gate Evidence Checklist (Where to Look)
 
 ### 3.1 分解线（UI-Driven Flow）
