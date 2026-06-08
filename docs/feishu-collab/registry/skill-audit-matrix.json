@@ -1,0 +1,29 @@
+{
+  "skills": [
+    {
+      "skill": "OKR-driven",
+      "status": "implemented-v1",
+      "next_plan": "use as template for the remaining four skills"
+    },
+    {
+      "skill": "Bitable",
+      "status": "audit-required",
+      "next_plan": "design task decomposition, progress alignment, and field governance adapters"
+    },
+    {
+      "skill": "GitHub-Feishu",
+      "status": "audit-required",
+      "next_plan": "align GitHub event sync with Base and approval projections"
+    },
+    {
+      "skill": "Approval",
+      "status": "audit-required",
+      "next_plan": "extract approval gate behavior into a preview-first skill package"
+    },
+    {
+      "skill": "Knowledge-Ops",
+      "status": "audit-required",
+      "next_plan": "define knowledge intake, runbook routing, and drift checks"
+    }
+  ]
+}
