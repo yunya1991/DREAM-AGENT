@@ -113,6 +113,22 @@ class WorkflowRuntimeContractTests(unittest.TestCase):
         self.assertIn("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true", acceptance)
         self.assertIn("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true", validator)
 
+    def test_all_workflows_with_deprecated_js_actions_opt_into_node24(self):
+        workflows = REPO_ROOT / ".github" / "workflows"
+        missing = []
+        for workflow in sorted(workflows.glob("*.yml")):
+            text = workflow.read_text(encoding="utf-8")
+            uses_deprecated_js_action = (
+                "actions/checkout@v4" in text or "actions/upload-artifact@v4" in text
+            )
+            if (
+                uses_deprecated_js_action
+                and "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true" not in text
+            ):
+                missing.append(workflow.name)
+
+        self.assertEqual([], missing)
+
 
 if __name__ == "__main__":
     unittest.main()

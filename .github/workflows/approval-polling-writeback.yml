@@ -29,6 +29,9 @@ on:
         default: "[]"
         type: string
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
 
@@ -111,17 +114,31 @@ jobs:
           import os
           from pathlib import Path
 
+          decoder = json.JSONDecoder()
+
+          def load_json_value(raw):
+              value, _ = decoder.raw_decode(raw.lstrip())
+              return value
+
           payload = {
-              "task_payload": json.loads(os.environ["TASK_PAYLOAD_JSON"]),
-              "goal_payload": json.loads(os.environ["GOAL_PAYLOAD_JSON"]),
-              "base_sync": json.loads(os.environ["BASE_SYNC_JSON"]),
-              "sibling_tasks": json.loads(os.environ["SIBLING_TASKS_JSON"]),
-              "status_result": json.loads(Path("approval_status_result.json").read_text(encoding="utf-8")),
+              "task_payload": load_json_value(os.environ["TASK_PAYLOAD_JSON"]),
+              "goal_payload": load_json_value(os.environ["GOAL_PAYLOAD_JSON"]),
+              "base_sync": load_json_value(os.environ["BASE_SYNC_JSON"]),
+              "sibling_tasks": load_json_value(os.environ["SIBLING_TASKS_JSON"]),
+              "status_result": load_json_value(
+                  Path("approval_status_result.json").read_text(encoding="utf-8")
+              ),
           }
           print(json.dumps(payload, ensure_ascii=False))
           PY
 
       - name: Run approval polling writeback
+        env:
+          LARK_IDENTITY: bot
+          LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARKSUITE_CLI_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+          LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+          LARKSUITE_CLI_STRICT_MODE: off
         run: |
           python3 github-actions/run_approval_polling_writeback.py < approval_writeback_input.json > approval_writeback_result.json
 

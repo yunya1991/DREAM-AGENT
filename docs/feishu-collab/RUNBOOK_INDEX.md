@@ -15,6 +15,8 @@ Every production-facing skill execution that changes online state must end with 
 
 | Runbook | Path | Purpose |
 | --- | --- | --- |
+| Approval task-feishu-approval-smoke-001 Runbook | `docs/feishu-collab/runbooks/approval-task-feishu-approval-smoke-001-runbook.md` | Track Approval task-feishu-approval-smoke-001 Runbook recovery and verification |
+| Feishu Token Strategy | `docs/feishu-collab/runbooks/feishu-token-strategy.md` | Choose between application identity and user identity tokens, and store the related credentials safely for workflow use |
 | Final Acceptance Checklist | `docs/feishu-collab/runbooks/final-acceptance-checklist.md` | Validate the merged mainline end to end and hand off operator evidence across approval, writeback, and knowledge materialization |
 | Knowledge Materialization | `docs/feishu-collab/runbooks/knowledge-materialization.md` | Materialize approval and polling artifacts into governed runbook and handoff documents |
 | Five Skill Integration Rehearsal | `docs/feishu-collab/runbooks/five-skill-integration-rehearsal.md` | Run the fixture-driven full-chain rehearsal and interpret the normalized result |
