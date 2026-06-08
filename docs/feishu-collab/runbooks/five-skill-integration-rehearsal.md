@@ -14,14 +14,19 @@ This runbook verifies that the core objective baseline can move through the full
 
 ## Local Command
 
-    python3 github-actions/run_five_skill_integration_rehearsal.py
+    python3 github-actions/run_five_skill_integration_rehearsal.py core-objective-baseline
 
 ## Workflow Entry
 
 - Workflow: `.github/workflows/five-skill-rehearsal.yml`
 - Trigger: `workflow_dispatch`
+- Scenario input: `scenario_id`
+- Default scenario: `core-objective-baseline`
+- Scenario source: `scenario registry`
 - Artifact report: `five-skill-rehearsal-report.json`
 - Primary GitHub surface: `Job Summary`
+
+Use only pre-registered `scenario_id` values. The workflow and runner resolve the manifest through the central scenario registry and will fail fast for unknown scenario ids.
 
 ## Expected Output
 
