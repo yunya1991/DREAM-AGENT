@@ -9,6 +9,8 @@ def _slugify(title):
 
 def resolve_knowledge_target(asset_type, title):
     slug = _slugify(title)
+    if not slug:
+        raise ValueError("empty_title")
     if asset_type == "operations":
         return f"docs/feishu-collab/runbooks/{slug}.md"
     if asset_type == "delivery":
@@ -17,4 +19,4 @@ def resolve_knowledge_target(asset_type, title):
         return f"docs/feishu-collab/governance/{slug}.md"
     if asset_type == "policy":
         return f"docs/feishu-collab/governance/{slug}.md"
-    return f"docs/feishu-collab/registry/{slug}.md"
+    raise ValueError("unknown_asset_type")
