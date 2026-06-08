@@ -1,0 +1,26 @@
+{
+  "event_name": "pull_request",
+  "action": "synchronize",
+  "repository": {
+    "full_name": "yunya1991/DREAM-AGENT"
+  },
+  "pull_request": {
+    "number": 88,
+    "title": "feat: connect github sync preview to collaboration flow",
+    "html_url": "https://github.com/yunya1991/DREAM-AGENT/pull/88",
+    "head": {
+      "ref": "feature/github-sync-preview",
+      "sha": "abc123def456"
+    },
+    "user": {
+      "login": "asher"
+    }
+  },
+  "sender": {
+    "login": "asher"
+  },
+  "workflow_run": {
+    "id": "778899",
+    "status": "in_progress"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "event_name": "issues",
+  "action": "opened",
+  "repository": {
+    "full_name": "yunya1991/DREAM-AGENT"
+  },
+  "issue": {
+    "number": 21,
+    "title": "同步验收状态到飞书协作面",
+    "html_url": "https://github.com/yunya1991/DREAM-AGENT/issues/21",
+    "user": {
+      "login": "asher"
+    }
+  },
+  "sender": {
+    "login": "asher"
+  }
+}
