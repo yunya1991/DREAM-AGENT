@@ -16,3 +16,9 @@
 - Dependencies
 - Risk notes
 - Evidence links
+
+## Entries
+
+| Handoff | Path | Purpose |
+| --- | --- | --- |
+| Approval task-feishu-approval-smoke-001 Handoff | `docs/feishu-collab/handoffs/approval-task-feishu-approval-smoke-001-handoff.md` | Hand off Approval task-feishu-approval-smoke-001 Handoff follow-up work |

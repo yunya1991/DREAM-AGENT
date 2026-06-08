@@ -35,6 +35,17 @@ class ApprovalPollingWritebackWorkflowTests(unittest.TestCase):
         self.assertIn("approval_status_result.json", text)
         self.assertIn("approval_writeback_result.json", text)
 
+    def test_workflow_injects_bot_lark_runtime_for_writeback(self):
+        text = self.read_workflow()
+        self.assertIn("LARK_IDENTITY: bot", text)
+        self.assertIn("LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}", text)
+        self.assertIn(
+            "LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}",
+            text,
+        )
+        self.assertIn("LARKSUITE_CLI_STRICT_MODE: off", text)
+        self.assertIn("tenant_access_token/internal", text)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -122,6 +122,11 @@ jobs:
           PY
 
       - name: Run approval polling writeback
+        env:
+          LARK_IDENTITY: bot
+          LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+          LARKSUITE_CLI_STRICT_MODE: off
         run: |
           python3 github-actions/run_approval_polling_writeback.py < approval_writeback_input.json > approval_writeback_result.json
 

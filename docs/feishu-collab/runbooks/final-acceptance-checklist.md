@@ -11,6 +11,7 @@ Provide an operator-facing acceptance checklist for the full Feishu collaboratio
 - Confirm GitHub Actions can dispatch `.github/workflows/approval-polling-writeback.yml`
 - Confirm GitHub Actions can dispatch `.github/workflows/knowledge-materialization.yml`
 - Confirm repository secrets `LARK_APP_ID` and `LARK_APP_SECRET` exist
+- Confirm the operator reviewed `docs/feishu-collab/runbooks/feishu-token-strategy.md`
 - Confirm the operator has valid `approval_code` and `applicant_open_id`
 - Confirm the operator knows `base_token`, `task_table_id`, `task_record_id`, `goal_table_id`, and `goal_record_id`
 
@@ -48,6 +49,7 @@ Provide an operator-facing acceptance checklist for the full Feishu collaboratio
 ## Stage 4: Scope And Access Check
 
 - If local approval instance re-query fails, confirm whether the operator account has `approval:instance:read`
+- If `tenant_access_token` fails for a user-auth API, switch to `user_access_token` and verify with `lark-cli --as user`
 - If `approval:instance:read` is missing, record the gap and continue validating from workflow artifacts and downstream Base updates
 - If `approval:instance:read` is present, run the second query and capture the returned approval status as final evidence
 
