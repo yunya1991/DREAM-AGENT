@@ -40,6 +40,7 @@ class ApprovalPollingWritebackWorkflowTests(unittest.TestCase):
         text = self.read_workflow()
         self.assertIn("LARK_IDENTITY: bot", text)
         self.assertIn("LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}", text)
+        self.assertIn("LARKSUITE_CLI_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}", text)
         self.assertIn(
             "LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}",
             text,

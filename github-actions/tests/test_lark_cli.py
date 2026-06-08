@@ -105,6 +105,18 @@ class LarkCliTests(unittest.TestCase):
 
         mock_run.assert_not_called()
 
+    @mock.patch.object(LARK_CLI.subprocess, "run")
+    def test_run_lark_json_surfaces_stdout_and_stderr_on_failure(self, mock_run):
+        mock_run.side_effect = subprocess.CalledProcessError(
+            3,
+            ["lark-cli", "base", "+record-upsert"],
+            output='{"hint":"stdout"}',
+            stderr="permission denied",
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "permission denied"):
+            LARK_CLI.run_lark_json(["base", "+record-upsert"], identity="bot")
+
 
 if __name__ == "__main__":
     unittest.main()

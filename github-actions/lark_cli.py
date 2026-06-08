@@ -14,12 +14,24 @@ def build_lark_command(args: list[str], identity: str | None = None) -> list[str
 
 
 def run_lark_json(args: list[str], identity: str | None = None) -> dict:
-    result = subprocess.run(
-        build_lark_command(args, identity=identity),
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    command = build_lark_command(args, identity=identity)
+    try:
+        result = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        details = []
+        if exc.stdout:
+            details.append(f"stdout: {exc.stdout.strip()}")
+        if exc.stderr:
+            details.append(f"stderr: {exc.stderr.strip()}")
+        detail_text = "; ".join(details) if details else "no output captured"
+        raise RuntimeError(
+            f"lark-cli command failed ({exc.returncode}): {' '.join(command)}; {detail_text}"
+        ) from exc
     return json.loads(result.stdout)
 
 

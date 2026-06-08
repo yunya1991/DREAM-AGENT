@@ -133,6 +133,7 @@ jobs:
         env:
           LARK_IDENTITY: bot
           LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARKSUITE_CLI_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
           LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
           LARKSUITE_CLI_STRICT_MODE: off
         run: |
