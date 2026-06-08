@@ -2,6 +2,12 @@ name: five-skill-rehearsal
 
 on:
   workflow_dispatch:
+    inputs:
+      scenario_id:
+        description: Registered rehearsal scenario id
+        required: true
+        default: core-objective-baseline
+        type: string
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -24,7 +30,7 @@ jobs:
 
       - name: Run five skill rehearsal
         run: |
-          python3 github-actions/run_five_skill_integration_rehearsal.py > five-skill-rehearsal-report.json
+          python3 github-actions/run_five_skill_integration_rehearsal.py "${{ inputs.scenario_id }}" > five-skill-rehearsal-report.json
 
       - name: Render rehearsal summary
         run: |

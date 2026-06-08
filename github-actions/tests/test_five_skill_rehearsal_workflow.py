@@ -20,14 +20,28 @@ class FiveSkillRehearsalWorkflowTests(unittest.TestCase):
         self.assertNotIn("issue_comment:", text)
         self.assertNotIn("schedule:", text)
 
+    def test_workflow_accepts_scenario_id_input(self):
+        text = self.read_workflow()
+        self.assertIn("scenario_id:", text)
+        self.assertIn("default: core-objective-baseline", text)
+        self.assertIn("description: Registered rehearsal scenario id", text)
+
     def test_workflow_runs_rehearsal_runner_and_summary_helper(self):
         text = self.read_workflow()
         self.assertIn(
-            "python3 github-actions/run_five_skill_integration_rehearsal.py > five-skill-rehearsal-report.json",
+            'python3 github-actions/run_five_skill_integration_rehearsal.py "${{ inputs.scenario_id }}" > five-skill-rehearsal-report.json',
             text,
         )
         self.assertIn(
             "python3 github-actions/render_rehearsal_workflow_summary.py five-skill-rehearsal-report.json",
+            text,
+        )
+
+    def test_workflow_passes_scenario_id_to_runner(self):
+        text = self.read_workflow()
+        self.assertIn("${{ inputs.scenario_id }}", text)
+        self.assertIn(
+            'python3 github-actions/run_five_skill_integration_rehearsal.py "${{ inputs.scenario_id }}" > five-skill-rehearsal-report.json',
             text,
         )
 
