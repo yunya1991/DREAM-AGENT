@@ -1,0 +1,34 @@
+{
+  "events": [
+    {
+      "event_type": "github.issue.changed",
+      "supported_actions": ["opened", "edited", "closed", "reopened", "labeled"],
+      "field_mapping": {
+        "治理状态": "triage_required",
+        "实现状态": "backlog"
+      },
+      "fallback_policy": "soft_block",
+      "knowledge_required": true
+    },
+    {
+      "event_type": "github.pr.changed",
+      "supported_actions": ["opened", "synchronize", "ready_for_review", "review_requested", "closed", "merged"],
+      "field_mapping": {
+        "平台状态": "checks_pending",
+        "自动化状态": "running"
+      },
+      "fallback_policy": "soft_block",
+      "knowledge_required": true
+    },
+    {
+      "event_type": "github.check.changed",
+      "supported_actions": ["requested", "in_progress", "completed"],
+      "field_mapping": {
+        "平台状态": "checks_passed_or_failed",
+        "自动化状态": "completed"
+      },
+      "fallback_policy": "soft_block",
+      "knowledge_required": true
+    }
+  ]
+}

@@ -29,5 +29,9 @@ def build_feishu_record(payload):
     }
 
 
+def project_github_collab_state(payload):
+    return build_feishu_record(payload)
+
+
 if __name__ == "__main__":
     json.dump(build_feishu_record(json.load(sys.stdin)), sys.stdout, ensure_ascii=False, indent=2)
