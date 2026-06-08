@@ -12,9 +12,16 @@ Run the fixture-driven system rehearsal for:
 
 This runbook verifies that the core objective baseline can move through the full collaboration chain with one normalized system result.
 
-## Command
+## Local Command
 
     python3 github-actions/run_five_skill_integration_rehearsal.py
+
+## Workflow Entry
+
+- Workflow: `.github/workflows/five-skill-rehearsal.yml`
+- Trigger: `workflow_dispatch`
+- Artifact report: `five-skill-rehearsal-report.json`
+- Primary GitHub surface: `Job Summary`
 
 ## Expected Output
 
@@ -29,9 +36,9 @@ This runbook verifies that the core objective baseline can move through the full
 ## Status Reading Guide
 
 - `pass`: the step completed without a system breakpoint
-- `warn`: the step completed with degraded evidence and the chain continued
-- `fail`: the step completed with a non-blocking contract or execution issue
-- `blocked`: the step cannot safely continue and the chain stops
+- `warn`: the workflow renders evidence but exits failed for operator review
+- `fail`: the workflow renders evidence and exits failed because a contract or execution issue remains
+- `blocked`: the workflow renders evidence and exits failed because the chain cannot continue safely
 
 ## Recovery Guide
 
