@@ -42,6 +42,7 @@ See `agent-efficient-collaboration-mode.md` and `agent-ledger-protocol-vs-govern
 
 ## 3. GitHub x 飞书协作文档
 
+- [feishu-collab/README.md](./feishu-collab/README.md) - 飞书协作体系总入口（治理、技能注册表、runbook、handoff、审计）
 - `github-feishu-integration-handbook.md` (接入规范)
 - `github-feishu-troubleshooting.md` (故障排查手册)
 - `github-feishu-e2e-case-index.md` (真实 E2E 案例索引)
