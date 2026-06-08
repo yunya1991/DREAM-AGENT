@@ -51,3 +51,7 @@ Use only pre-registered `scenario_id` values. The workflow and runner resolve th
 - If `data_gap`, repair the fixture or missing reference and rerun
 - If `contract_gap`, align the step interface and rerun
 - If `execution_gap`, inspect the skill output and rerun
+
+## Real Execution Note
+
+For real approval side effects, use `.github/workflows/real-approval-trigger.yml`. The rehearsal workflow remains a dry-run and does not create real approval instances.
