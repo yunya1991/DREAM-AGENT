@@ -14,7 +14,7 @@ class QueryRealApprovalStatusTests(unittest.TestCase):
         SPEC.loader.exec_module(module)
         return module
 
-    def test_build_status_result_uses_status_projection(self):
+    def test_build_status_result_uses_normalized_status_projection(self):
         module = self.load_module()
         result = module.build_status_result(
             instance={"status": "APPROVED"},
@@ -23,7 +23,7 @@ class QueryRealApprovalStatusTests(unittest.TestCase):
         )
         self.assertEqual(result["approval_instance_code"], "ins_123")
         self.assertEqual(result["approval_status"], "approved")
-        self.assertEqual(result["automation_status"], "running")
+        self.assertEqual(result["automation_status"], "proceed")
         self.assertEqual(result["decision_summary"], "approved:TASK-1")
 
 

@@ -50,18 +50,23 @@ class FeishuApprovalApiTests(unittest.TestCase):
         )
         self.assertEqual(request.get_method(), "POST")
 
-    def test_resolve_instance_status_maps_to_task_updates(self):
+    def test_resolve_instance_status_maps_to_normalized_automation_states(self):
         SPEC.loader.exec_module(MODULE)
-        result = MODULE.resolve_instance_status(
-            {
-                "status": "APPROVED",
-                "instance_code": "ins_001",
-            },
-            decision_id="decision-001",
-        )
-        self.assertEqual(result["approval_status"], "approved")
-        self.assertEqual(result["automation_status"], "running")
-        self.assertEqual(result["decision_summary"], "approved:decision-001")
+        approved = MODULE.resolve_instance_status({"status": "APPROVED"}, decision_id="decision-001")
+        rejected = MODULE.resolve_instance_status({"status": "REJECTED"}, decision_id="decision-002")
+        pending = MODULE.resolve_instance_status({"status": "PENDING"}, decision_id="decision-003")
+
+        self.assertEqual(approved["approval_status"], "approved")
+        self.assertEqual(approved["automation_status"], "proceed")
+        self.assertEqual(approved["decision_summary"], "approved:decision-001")
+
+        self.assertEqual(rejected["approval_status"], "rejected")
+        self.assertEqual(rejected["automation_status"], "blocked")
+        self.assertEqual(rejected["decision_summary"], "rejected:decision-002")
+
+        self.assertEqual(pending["approval_status"], "pending")
+        self.assertEqual(pending["automation_status"], "paused")
+        self.assertEqual(pending["decision_summary"], "pending:decision-003")
 
 
 if __name__ == "__main__":

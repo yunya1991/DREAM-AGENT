@@ -65,7 +65,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
         )
 
         self.assertEqual(result["task_updates"]["approval_status"], "approved")
-        self.assertEqual(result["task_updates"]["automation_status"], "running")
+        self.assertEqual(result["task_updates"]["automation_status"], "proceed")
         self.assertEqual(result["goal_record"]["goal_status"], "active")
         self.assertEqual(mock_upsert.call_count, 2)
 
@@ -104,6 +104,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
 
         task_fields = mock_upsert.call_args_list[0].args[3]
         self.assertEqual(task_fields["审批状态"], "rejected")
+        self.assertEqual(task_fields["自动化状态"], "blocked")
         self.assertEqual(task_fields["审批决策ID"], "task-2")
         self.assertEqual(task_fields["任务ID"], "task-2")
 
