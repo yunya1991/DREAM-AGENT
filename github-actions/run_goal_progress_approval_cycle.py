@@ -68,9 +68,11 @@ def run_cycle(
     tenant_access_token,
     approval_code,
     applicant_user_id,
+    applicant_open_id="",
 ):
     gate_result = GATE.evaluate_gate(task_payload)
     task_updates = dict(task_payload)
+    effective_applicant_open_id = applicant_open_id or applicant_user_id
 
     if not gate_result.get("requires_approval"):
         task_updates["approval_status"] = "not_required"
@@ -94,7 +96,7 @@ def run_cycle(
     else:
         approval_body = APPROVAL_API.build_create_instance_body(
             approval_code=approval_code,
-            user_id=applicant_user_id,
+            applicant_open_id=effective_applicant_open_id,
             instance_external_id=task_payload.get("task_id", ""),
             form=build_approval_form(task_payload, gate_result),
         )
@@ -122,6 +124,7 @@ def main():
         tenant_access_token=payload.get("tenant_access_token", ""),
         approval_code=payload.get("approval_code", ""),
         applicant_user_id=payload.get("applicant_user_id", ""),
+        applicant_open_id=payload.get("applicant_open_id", ""),
     )
     json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")

@@ -5,12 +5,12 @@ import urllib.request
 APPROVAL_BASE_URL = "https://open.feishu.cn/open-apis/approval/v4"
 
 
-def build_create_instance_body(approval_code, user_id, instance_external_id, form):
+def build_create_instance_body(approval_code, applicant_open_id, instance_external_id, form):
     return {
         "approval_code": approval_code,
-        "user_id": user_id,
+        "open_id": applicant_open_id,
         "instance_external_id": instance_external_id,
-        "form": form,
+        "form": json.dumps(form, ensure_ascii=False),
     }
 
 

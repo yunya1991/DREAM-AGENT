@@ -13,18 +13,24 @@ MODULE = importlib.util.module_from_spec(SPEC)
 
 
 class FeishuApprovalApiTests(unittest.TestCase):
-    def test_build_create_instance_body_keeps_external_id_and_form(self):
+    def test_build_create_instance_body_keeps_external_id_and_serializes_form(self):
         SPEC.loader.exec_module(MODULE)
         body = MODULE.build_create_instance_body(
             approval_code="approval-code-001",
-            user_id="ou_xxx",
+            applicant_open_id="ou_xxx",
             instance_external_id="decision-001",
             form=[{"id": "decision_summary", "type": "textarea", "value": "pick A"}],
         )
         self.assertEqual(body["approval_code"], "approval-code-001")
-        self.assertEqual(body["user_id"], "ou_xxx")
+        self.assertEqual(body["open_id"], "ou_xxx")
         self.assertEqual(body["instance_external_id"], "decision-001")
-        self.assertEqual(body["form"][0]["value"], "pick A")
+        self.assertEqual(
+            body["form"],
+            json.dumps(
+                [{"id": "decision_summary", "type": "textarea", "value": "pick A"}],
+                ensure_ascii=False,
+            ),
+        )
 
     @mock.patch("urllib.request.urlopen")
     def test_create_instance_uses_instances_endpoint(self, mock_urlopen):
