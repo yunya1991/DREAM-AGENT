@@ -23,7 +23,7 @@
     {
       "skill": "Knowledge-Ops",
       "status": "audit-required",
-      "next_plan": "define knowledge intake, runbook routing, and drift checks"
+      "next_plan": "expand knowledge intake, add drift checks, and harden asset validation"
     }
   ]
 }

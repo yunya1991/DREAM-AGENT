@@ -35,6 +35,10 @@ class FeishuCollabKnowledgePathingTests(unittest.TestCase):
         self.assertTrue((DOC_ROOT / "templates" / "handoff-template.md").exists())
         self.assertTrue((DOC_ROOT / "templates" / "runbook-template.md").exists())
 
+    def test_target_directories_exist(self):
+        self.assertTrue((DOC_ROOT / "runbooks").exists())
+        self.assertTrue((DOC_ROOT / "handoffs").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
