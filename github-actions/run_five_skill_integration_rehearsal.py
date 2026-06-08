@@ -10,15 +10,20 @@ if str(ROOT) not in sys.path:
 from feishu_collab.integration.chain_orchestrator import run_rehearsal_chain
 from feishu_collab.integration.rehearsal_reporter import build_rehearsal_report
 from feishu_collab.integration.scenario_loader import load_rehearsal_scenario
+from feishu_collab.integration.scenario_registry import resolve_scenario_manifest
 
 
-DEFAULT_SCENARIO = (
-    ROOT / "tests" / "fixtures" / "integration" / "core_objective_baseline.json"
-)
+DEFAULT_SCENARIO_ID = "core-objective-baseline"
+REGISTRY_PATH = ROOT / "tests" / "fixtures" / "integration" / "scenario_registry.json"
 
 
-def run_rehearsal(scenario_path=None):
-    payload = load_rehearsal_scenario(ROOT.parent, scenario_path or DEFAULT_SCENARIO)
+def run_rehearsal(scenario_id=DEFAULT_SCENARIO_ID):
+    scenario_path = resolve_scenario_manifest(
+        repo_root=ROOT.parent,
+        scenario_id=scenario_id,
+        registry_path=REGISTRY_PATH,
+    )
+    payload = load_rehearsal_scenario(ROOT.parent, scenario_path)
     result = run_rehearsal_chain(payload)
     return build_rehearsal_report(
         scenario_manifest=payload["scenario_manifest"],
@@ -28,6 +33,7 @@ def run_rehearsal(scenario_path=None):
 
 
 if __name__ == "__main__":
-    report = run_rehearsal()
+    selected = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SCENARIO_ID
+    report = run_rehearsal(scenario_id=selected)
     json.dump(report, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")
