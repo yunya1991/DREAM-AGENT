@@ -162,6 +162,83 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
         self.assertEqual(written_goal_fields["OKR对齐"], "已对齐")
         self.assertEqual(written_goal_fields["workflow_signal"], "healthy")
 
+    @patch.object(POLL, "upsert_base_record")
+    def test_task_writeback_failure_skips_goal_writeback(self, mock_upsert):
+        mock_upsert.side_effect = RuntimeError("task writeback failed")
+
+        result = POLL.sync_with_status_result(
+            payload={
+                "task_payload": {
+                    "task_id": "task-fail",
+                    "task_name": "Task Fail",
+                    "goal_id": "goal-fail",
+                },
+                "goal_payload": {
+                    "goal_id": "goal-fail",
+                    "goal_name": "Goal Fail",
+                    "goal_owner": "owner",
+                },
+                "sibling_tasks": [],
+                "base_sync": {
+                    "base_token": "app_base",
+                    "task_table_id": "tbl_task",
+                    "task_record_id": "rec_task",
+                    "goal_table_id": "tbl_goal",
+                    "goal_record_id": "rec_goal",
+                },
+            },
+            status_result={
+                "approval_instance_code": "instance-fail",
+                "approval_status": "approved",
+                "automation_status": "proceed",
+                "decision_summary": "approved:task-fail",
+            },
+        )
+
+        self.assertEqual(result["task_writeback_status"], "failed")
+        self.assertEqual(result["goal_writeback_status"], "skipped")
+        self.assertEqual(mock_upsert.call_count, 1)
+
+    @patch.object(POLL, "upsert_base_record")
+    def test_goal_writeback_failure_preserves_task_receipt(self, mock_upsert):
+        mock_upsert.side_effect = [
+            {"record_id": "rec_task_written"},
+            RuntimeError("goal writeback failed"),
+        ]
+
+        result = POLL.sync_with_status_result(
+            payload={
+                "task_payload": {
+                    "task_id": "task-goal-fail",
+                    "task_name": "Task Goal Fail",
+                    "goal_id": "goal-goal-fail",
+                },
+                "goal_payload": {
+                    "goal_id": "goal-goal-fail",
+                    "goal_name": "Goal Goal Fail",
+                    "goal_owner": "owner",
+                },
+                "sibling_tasks": [],
+                "base_sync": {
+                    "base_token": "app_base",
+                    "task_table_id": "tbl_task",
+                    "task_record_id": "rec_task",
+                    "goal_table_id": "tbl_goal",
+                    "goal_record_id": "rec_goal",
+                },
+            },
+            status_result={
+                "approval_instance_code": "instance-goal-fail",
+                "approval_status": "approved",
+                "automation_status": "proceed",
+                "decision_summary": "approved:task-goal-fail",
+            },
+        )
+
+        self.assertEqual(result["task_writeback_status"], "success")
+        self.assertEqual(result["goal_writeback_status"], "failed")
+        self.assertEqual(result["task_writeback_receipt"]["record_id"], "rec_task_written")
+
 
 if __name__ == "__main__":
     unittest.main()
