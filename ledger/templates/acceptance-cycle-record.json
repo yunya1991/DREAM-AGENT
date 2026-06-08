@@ -1,0 +1,25 @@
+{
+  "acceptance_cycle_id": "ac-example",
+  "work_item_id": "WI-example",
+  "cycle_status": "requested",
+  "creation_mode": "manual",
+  "linked_prs": [],
+  "latest_acceptance_request_id": "",
+  "latest_validation_result_id": "",
+  "current_phase": "context-reader",
+  "lark_context_locator": {
+    "base_url": "",
+    "table_id": "",
+    "record_id": ""
+  },
+  "agent_outputs": {
+    "context-reader": {},
+    "protocol-checker": {},
+    "acceptance-validator": {},
+    "result-synthesizer": {}
+  },
+  "artifacts": {
+    "context_snapshot_file": "",
+    "validation_result_comment_file": ""
+  }
+}

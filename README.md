@@ -7,7 +7,7 @@ depends:
   - 01-COLLABORATION-PROTOCOL
   - 02-ARCHITECTURE
 version: 2
-last_verified: 2026-05-20
+last_verified: 2026-06-08
 ---
 
 # AGENT 协作工具
@@ -86,8 +86,26 @@ last_verified: 2026-05-20
 - `docs/agent-collaboration-system-v1-implementation-plan.md`：AGENT协作系统 v1 实施计划
 - `docs/agent-collaboration-system-v1-governance-agent-implementation-plan.md`：治理 AGENT 增量实施计划
 - [docs/agent-collaboration-system-v1-governance-cycle-implementation-plan.md](docs/agent-collaboration-system-v1-governance-cycle-implementation-plan.md)：治理账本最小闭环控制器实施计划
+- `docs/superpowers/specs/2026-06-07-dream-agent-hybrid-unit-dispatch-design.md`：混合单元编排、飞书一级正式能力、回滚模型
+- `docs/superpowers/plans/2026-06-07-dream-agent-hybrid-unit-dispatch-implementation.md`：对应实施计划
+- `docs/superpowers/specs/2026-06-07-github-feishu-collaboration-closure-repair-design.md`：GitHub checks、治理结论与飞书监控闭环修复设计
+- `docs/superpowers/plans/2026-06-07-github-feishu-collaboration-closure-repair-implementation.md`：对应实施计划
+- `docs/superpowers/specs/2026-06-07-feishu-goal-driven-progress-and-risk-approval-design.md`：飞书目标驱动进度监控与风险审批设计
+- `docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md`：对应实施计划
+- `docs/superpowers/specs/2026-06-08-feishu-approval-success-closure-design.md`：真实审批 smoke 成功闭环、回读同步与运行时兼容设计
+- `docs/superpowers/plans/2026-06-08-feishu-approval-success-closure-implementation.md`：对应实施计划
 
 原 `docs/superpowers/` 下的对应文档当前保留兼容壳，用于承接历史链接与旧 PR 讨论。
+
+## Feishu Approval Real Smoke Status
+
+- 已真实验证的审批 scope：`approval:approval`、`approval:instance`
+- 成功 smoke run：GitHub Actions `27098459714`
+- 审批定义 code：`6DE5C07A-5FDC-44D0-9110-8B74AB0837B6`
+- 真实审批实例 code：`188BD557-48FE-460E-8728-BD987112E7D0`
+- 请求体关键坑点：`form` 必须先序列化为 JSON 字符串，不能直接传原始数组
+- 申请人标识关键坑点：已有 `ou_...` 时必须写入 `open_id`，不能误放到 `user_id`
+- 运行时兼容处理：`collab-acceptance-agent.yml` 与 `collab-validator-agent.yml` 统一设置 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`，用于压住废弃 JavaScript Actions 的 Node 20 告警
 
 ## 高效协作模式
 

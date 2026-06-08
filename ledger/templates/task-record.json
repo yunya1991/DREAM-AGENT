@@ -28,6 +28,20 @@
   "archived_at": "",
   "knowledge_synced_at": "",
   "next_required_action": "",
+  "unit_id": "",
+  "feishu_asset_mode": "full-sync",
+  "version_anchor": {
+    "git_commit_before": "",
+    "git_branch_or_pr_ref": "",
+    "workflow_run_id": "",
+    "acceptance_request_id": "",
+    "feishu_asset_before_snapshot": ""
+  },
+  "rollback_strategy": {
+    "default_level": "unit",
+    "trigger": [],
+    "owner": ""
+  },
   "governance_closure": {
     "archive_summary": "",
     "index_updates": [],

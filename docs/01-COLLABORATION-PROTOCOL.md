@@ -134,10 +134,15 @@ Templates live in `templates/`.
 ### 2.5 ACCEPTANCE_REQUEST
 
 - `Acceptance Request ID`
+- `Acceptance Cycle ID`
+- `Work Item ID`
 - `Request Type`
 - `Request Mode`
 - `Source of Truth`
 - `Target PR`
+- `Lark Base URL`
+- `Lark Table ID`
+- `Lark Record ID`
 - `验收对象`
 - `验收范围`
 - `业务上下文映射`
@@ -150,13 +155,20 @@ Notes:
 - `DONE != ACCEPTED`
 - `DONE` means delivery is complete; `VALIDATION_RESULT` is the acceptance conclusion.
 
-### 2.6 DONE
+### 2.6 acceptance_cycle
+
+- `acceptance_cycle` 是 `Acceptance Orchestration V2` 的编排中心对象
+- 真源载体位于 `ledger/acceptance_cycles/*.json`
+- 正式验收结论仍只允许落在 GitHub `VALIDATION_RESULT`
+- 飞书只提供上下文与摘要回写，不写入第二份正式主结论
+
+### 2.7 DONE
 
 - `Agent: <agent_id>`
 - `提交: <commit sha>`
 - Delivery summary
 
-### 2.7 LEDGER_SYNC (new)
+### 2.8 LEDGER_SYNC (new)
 
 - `Sync Agent: CLI | GitHub Action`
 - `Protocol File: <path to LEDGER-YYYYMMDD.md>`

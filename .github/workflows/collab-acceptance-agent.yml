@@ -3,6 +3,11 @@ name: collab-acceptance-agent
 on:
   workflow_dispatch:
     inputs:
+      smoke_action:
+        description: "Workflow mode: standard or approval-smoke"
+        required: false
+        default: "standard"
+        type: string
       pr_number:
         description: "Target PR number"
         required: true
@@ -12,8 +17,21 @@ on:
         required: false
         default: ""
         type: string
+      approval_code:
+        description: "Approval definition code for approval-smoke mode"
+        required: false
+        default: ""
+        type: string
+      applicant_open_id:
+        description: "Applicant open_id for approval-smoke mode"
+        required: false
+        default: ""
+        type: string
   issue_comment:
     types: [created]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: read
@@ -28,17 +46,19 @@ jobs:
   acceptance:
     runs-on: [self-hosted, macOS, workbuddy]
     if: >
-      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'workflow_dispatch' &&
+        inputs.smoke_action != 'approval-smoke'
+      ) ||
       (
         github.event_name == 'issue_comment' &&
         github.event.issue.pull_request != null &&
         contains(github.event.comment.body, '[验收委托 / ACCEPTANCE_REQUEST]')
       )
     steps:
-      - name: Checkout main
+      - name: Checkout workflow ref
         uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
 
       - name: Resolve inputs
@@ -114,74 +134,82 @@ jobs:
           write_output("comment_body", candidates[-1] if candidates else "")
           PY
 
-      - name: Evaluate acceptance request
-        id: evaluate
+      - name: Create or load acceptance cycle
+        id: cycle
         env:
+          PR_NUMBER: ${{ steps.inputs.outputs.pr_number }}
+          ACCEPTANCE_REQUEST_ID: ${{ steps.inputs.outputs.acceptance_request_id }}
           COMMENT_BODY: ${{ steps.request.outputs.comment_body }}
         run: |
-          python3 - <<'PY'
-          import importlib.util
-          import os
-          import pathlib
+          python3 github-actions/manage_acceptance_cycle.py > acceptance_cycle.json
 
-          root = pathlib.Path.cwd()
-          module_path = root / "github-actions" / "check_acceptance_request.py"
-          spec = importlib.util.spec_from_file_location("check_acceptance_request", module_path)
-          module = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(module)
-
-          result = module.evaluate_acceptance_request(os.environ.get("COMMENT_BODY", ""))
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-            fh.write(f"decision={result['decision']}\n")
-            fh.write(f"protocol_read_result={result['protocol_read_result']}\n")
-            fh.write(f"source_of_truth_verdict={result['source_of_truth_verdict']}\n")
-            fh.write(f"recommended_next_action={result['recommended_next_action']}\n")
-            fh.write(f"acceptance_request_id={result.get('acceptance_request_id', 'none')}\n")
-            fh.write(f"reason_codes={','.join(result['reason_codes'])}\n")
-          PY
-
-      - name: Render VALIDATION_RESULT comment
+      - name: Mint lark tenant access token
         env:
-          DECISION: ${{ steps.evaluate.outputs.decision }}
-          PROTOCOL_READ_RESULT: ${{ steps.evaluate.outputs.protocol_read_result }}
-          SOURCE_OF_TRUTH_VERDICT: ${{ steps.evaluate.outputs.source_of_truth_verdict }}
-          NEXT_ACTION: ${{ steps.evaluate.outputs.recommended_next_action }}
-          ACCEPTANCE_REQUEST_ID: ${{ steps.evaluate.outputs.acceptance_request_id }}
-          REASON_CODES: ${{ steps.evaluate.outputs.reason_codes }}
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
         run: |
           python3 - <<'PY'
+          import json
           import os
+          import urllib.request
 
-          decision = os.environ["DECISION"]
-          hard_gate = "BLOCK" if decision == "BLOCK" else "PASS"
-          conclusion_map = {
-            "ACCEPTED": "trial_pass",
-            "REWORK": "trial_partial",
-            "BLOCK": "trial_fail",
-          }
-          lines = [
-            "[验证结论 / VALIDATION_RESULT]",
-            "",
-            "Validator: collab-acceptance-agent",
-            "Validation Mode: acceptance",
-            f"Acceptance Request ID: {os.environ['ACCEPTANCE_REQUEST_ID']}",
-            f"Hard Gate Result: {hard_gate}",
-            "Score: 90",
-            f"Decision: {decision}",
-            f"Protocol Read Result: {os.environ['PROTOCOL_READ_RESULT']}",
-            f"Source of Truth Verdict: {os.environ['SOURCE_OF_TRUTH_VERDICT']}",
-            "Reason Codes:",
-            f"- {os.environ['REASON_CODES']}",
-            "Must-Fix Items:",
-            "- none",
-            f"Next Step Recommendation: {os.environ['NEXT_ACTION']}",
-            f"Acceptance Conclusion: {conclusion_map.get(decision, 'trial_fail')}",
-            "Reward Multiplier: 1.0",
-            "Ledger Update: none",
-            "Governance Handoff: pending",
-          ]
-          with open("pr_acceptance_result.md", "w", encoding="utf-8") as fh:
-            fh.write("\n".join(lines) + "\n")
+          payload = json.dumps(
+              {
+                  "app_id": os.environ["LARK_APP_ID"],
+                  "app_secret": os.environ["LARK_APP_SECRET"],
+              }
+          ).encode("utf-8")
+          request = urllib.request.Request(
+              "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+              data=payload,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read().decode("utf-8"))
+          if result.get("code") != 0 or not result.get("tenant_access_token"):
+              raise SystemExit(json.dumps(result, ensure_ascii=False))
+          print(f"::add-mask::{result['tenant_access_token']}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
+          PY
+
+      - name: Collect lark context
+        env:
+          LARK_IDENTITY: bot
+          LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+          LARKSUITE_CLI_STRICT_MODE: off
+        run: |
+          python3 github-actions/collect_lark_context.py acceptance_cycle.json > acceptance_context.json
+
+      - name: Run acceptance cycle
+        env:
+          LARK_IDENTITY: bot
+          LARKSUITE_CLI_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARKSUITE_CLI_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+          LARKSUITE_CLI_STRICT_MODE: off
+          COMMENT_BODY: ${{ steps.request.outputs.comment_body }}
+          PR_NUMBER: ${{ steps.inputs.outputs.pr_number }}
+        run: |
+          python3 github-actions/run_acceptance_cycle.py acceptance_cycle.json > acceptance_run.json
+
+      - name: Render VALIDATION_RESULT comment
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = json.loads(Path("acceptance_run.json").read_text(encoding="utf-8"))
+          Path("pr_acceptance_result.md").write_text(
+            payload["comment_body"],
+            encoding="utf-8",
+          )
+          Path("lark_summary_patch.json").write_text(
+            json.dumps(payload["lark_summary_patch"], ensure_ascii=False, indent=2),
+            encoding="utf-8",
+          )
           PY
 
       - name: Post VALIDATION_RESULT comment
@@ -189,3 +217,119 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.inputs.outputs.pr_number }}
         run: gh pr comment "${PR_NUMBER}" --body-file pr_acceptance_result.md
+
+  approval-smoke:
+    runs-on: [self-hosted, macOS, workbuddy]
+    if: >
+      github.event_name == 'workflow_dispatch' &&
+      inputs.smoke_action == 'approval-smoke'
+    steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mint lark tenant access token
+        env:
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          payload = json.dumps(
+              {
+                  "app_id": os.environ["LARK_APP_ID"],
+                  "app_secret": os.environ["LARK_APP_SECRET"],
+              }
+          ).encode("utf-8")
+          request = urllib.request.Request(
+              "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+              data=payload,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read().decode("utf-8"))
+          if result.get("code") != 0 or not result.get("tenant_access_token"):
+              raise SystemExit(json.dumps(result, ensure_ascii=False))
+          print(f"::add-mask::{result['tenant_access_token']}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
+          PY
+
+      - name: Fetch approval definition and create instance
+        env:
+          APPROVAL_CODE: ${{ inputs.approval_code }}
+          APPLICANT_OPEN_ID: ${{ inputs.applicant_open_id }}
+          LARK_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+          token = os.environ["LARK_TENANT_ACCESS_TOKEN"]
+          approval_code = os.environ["APPROVAL_CODE"]
+          applicant_open_id = os.environ["APPLICANT_OPEN_ID"]
+          headers = {
+              "Authorization": f"Bearer {token}",
+              "Content-Type": "application/json; charset=utf-8",
+          }
+
+          def request_json(url, method="GET", body=None):
+              data = None if body is None else json.dumps(body).encode("utf-8")
+              req = urllib.request.Request(url, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req) as response:
+                      return json.loads(response.read().decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  payload = exc.read().decode("utf-8", errors="replace")
+                  try:
+                      return {"http_status": exc.code, "error": json.loads(payload)}
+                  except json.JSONDecodeError:
+                      return {"http_status": exc.code, "error_text": payload}
+
+          definition = request_json(
+              f"https://open.feishu.cn/open-apis/approval/v4/approvals/{approval_code}"
+          )
+          Path("approval_definition.json").write_text(
+              json.dumps(definition, ensure_ascii=False, indent=2),
+              encoding="utf-8",
+          )
+
+          create_body = {
+              "approval_code": approval_code,
+              "open_id": applicant_open_id,
+              "instance_external_id": f"smoke-{os.environ['GITHUB_RUN_ID']}",
+              "form": json.dumps([]),
+          }
+          created = request_json(
+              "https://open.feishu.cn/open-apis/approval/v4/instances",
+              method="POST",
+              body=create_body,
+          )
+          Path("approval_instance_create.json").write_text(
+              json.dumps(created, ensure_ascii=False, indent=2),
+              encoding="utf-8",
+          )
+          print("Definition response saved to approval_definition.json")
+          print("Create response saved to approval_instance_create.json")
+          print(json.dumps(created, ensure_ascii=False))
+          if created.get("http_status") or created.get("code") not in (0, None):
+              raise SystemExit(1)
+          PY
+
+      - name: Upload approval smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feishu-approval-smoke-${{ github.run_id }}
+          path: |
+            approval_definition.json
+            approval_instance_create.json

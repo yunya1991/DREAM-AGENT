@@ -1,0 +1,9 @@
+{
+  "asset_type": "operations",
+  "title": "Approval timeout recovery",
+  "summary": "Manual recovery path for timed-out approvals",
+  "evidence_refs": [
+    "task-approval-001",
+    "instance-approval-001"
+  ]
+}

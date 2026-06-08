@@ -1,0 +1,140 @@
+name: approval-polling-writeback
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval_instance_code:
+        description: Existing approval instance code
+        required: true
+        type: string
+      decision_id:
+        description: Decision id used for status projection
+        required: true
+        type: string
+      task_payload_json:
+        description: Task payload JSON
+        required: true
+        type: string
+      goal_payload_json:
+        description: Goal payload JSON
+        required: true
+        type: string
+      base_sync_json:
+        description: Base sync routing JSON
+        required: true
+        type: string
+      sibling_tasks_json:
+        description: Optional sibling tasks JSON array
+        required: false
+        default: "[]"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  approval-polling-writeback:
+    runs-on: [self-hosted, macOS, workbuddy]
+    steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize result placeholders
+        run: |
+          printf '{}\n' > approval_status_result.json
+          printf '{}\n' > approval_writeback_result.json
+
+      - name: Mint lark tenant access token
+        env:
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          payload = json.dumps(
+              {
+                  "app_id": os.environ["LARK_APP_ID"],
+                  "app_secret": os.environ["LARK_APP_SECRET"],
+              }
+          ).encode("utf-8")
+          request = urllib.request.Request(
+              "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+              data=payload,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read().decode("utf-8"))
+          if result.get("code") != 0 or not result.get("tenant_access_token"):
+              raise SystemExit(json.dumps(result, ensure_ascii=False))
+          print(f"::add-mask::{result['tenant_access_token']}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
+          PY
+
+      - name: Build approval status query payload
+        env:
+          APPROVAL_INSTANCE_CODE: ${{ inputs.approval_instance_code }}
+          DECISION_ID: ${{ inputs.decision_id }}
+          LARK_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+        run: |
+          python3 - <<'PY' > approval_status_input.json
+          import json
+          import os
+
+          payload = {
+              "tenant_access_token": os.environ["LARK_TENANT_ACCESS_TOKEN"],
+              "approval_instance_code": os.environ["APPROVAL_INSTANCE_CODE"],
+              "decision_id": os.environ["DECISION_ID"],
+          }
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Query approval status
+        run: |
+          python3 github-actions/query_real_approval_status.py < approval_status_input.json > approval_status_result.json
+
+      - name: Build polling writeback payload
+        env:
+          TASK_PAYLOAD_JSON: ${{ inputs.task_payload_json }}
+          GOAL_PAYLOAD_JSON: ${{ inputs.goal_payload_json }}
+          BASE_SYNC_JSON: ${{ inputs.base_sync_json }}
+          SIBLING_TASKS_JSON: ${{ inputs.sibling_tasks_json }}
+        run: |
+          python3 - <<'PY' > approval_writeback_input.json
+          import json
+          import os
+          from pathlib import Path
+
+          payload = {
+              "task_payload": json.loads(os.environ["TASK_PAYLOAD_JSON"]),
+              "goal_payload": json.loads(os.environ["GOAL_PAYLOAD_JSON"]),
+              "base_sync": json.loads(os.environ["BASE_SYNC_JSON"]),
+              "sibling_tasks": json.loads(os.environ["SIBLING_TASKS_JSON"]),
+              "status_result": json.loads(Path("approval_status_result.json").read_text(encoding="utf-8")),
+          }
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Run approval polling writeback
+        run: |
+          python3 github-actions/run_approval_polling_writeback.py < approval_writeback_input.json > approval_writeback_result.json
+
+      - name: Render polling writeback summary
+        if: always()
+        run: |
+          python3 github-actions/render_approval_polling_writeback_summary.py approval_status_result.json approval_writeback_result.json
+
+      - name: Upload polling writeback artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: approval-polling-writeback-${{ github.run_id }}
+          path: |
+            approval_status_result.json
+            approval_writeback_result.json

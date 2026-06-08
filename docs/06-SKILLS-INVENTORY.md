@@ -5,7 +5,7 @@ owner: ledger-protocol-agent
 depends:
   - 01-COLLABORATION-PROTOCOL
 version: 3
-last_verified: 2026-05-20
+last_verified: 2026-06-08
 ---
 
 # SKILLS Inventory
@@ -94,6 +94,14 @@ last_verified: 2026-05-20
   ```
 - Post-task sync: `ledger_sync.py push-status --workspace 7-ARTIFACT-HUB-V2 --print-comment`
 - Auto-sync: `.github/workflows/collab-ledger-sync.yml` fires on `index.json` changes to main
+
+### 1.9 github-feishu-bot-bootstrap ⭐
+
+- Spec: `SKILLS/github-feishu-bot-bootstrap/SKILL.md`
+- Purpose: 作为 GitHub x 飞书长期入口技能，统一处理 Base / OKR / Wiki 接入、bot 权限、workflow 接线、E2E 联调与故障回补。
+- When to use: 当需要把 GitHub workflow 接入飞书 Base / OKR / Wiki，或需要新建、复用、扩展、排障 GitHub x 飞书协作链路时。
+- Trigger words: 飞书 bot、Feishu bot、GitHub 飞书集成、Base 联调、Lark bot、tenant_access_token
+- Current live bootstrap notes: 已沉淀真实审批 smoke 经验，包含 `approval:approval` / `approval:instance` scope 验证、`form` 需序列化为 JSON 字符串、`ou_...` 申请人必须放在 `open_id`、以及 collab workflows 的 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` 兼容设置。
 
 ## 2. Operational Scripts (Non-SKILL but Critical)
 

@@ -1,0 +1,20 @@
+{
+  "scenario_id": "core-objective-baseline",
+  "skill_sequence": [
+    "okr-driven",
+    "bitable",
+    "github-sync",
+    "approval",
+    "knowledge-ops"
+  ],
+  "sources": {
+    "okr_spec_path": "docs/superpowers/specs/2026-06-08-okr-driven-skill-design.md",
+    "okr_plan_path": "docs/superpowers/plans/2026-06-08-okr-driven-skill-implementation.md",
+    "bitable_base_context_path": "github-actions/tests/fixtures/bitable_skill/base_context.json",
+    "github_sync_event_path": "github-actions/tests/fixtures/github_sync/pr_event.json",
+    "github_sync_collab_context_path": "github-actions/tests/fixtures/github_sync/collab_context.json",
+    "approval_risk_context_path": "github-actions/tests/fixtures/approval_skill/risk_context.json",
+    "approval_context_path": "github-actions/tests/fixtures/approval_skill/approval_context.json",
+    "knowledge_handoff_context_path": "github-actions/tests/fixtures/knowledge_ops/handoff_context.json"
+  }
+}

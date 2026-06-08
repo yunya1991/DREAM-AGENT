@@ -6,15 +6,15 @@ depends:
   - 00-AGENT-CONSTITUTION
   - 01-COLLABORATION-PROTOCOL
   - 02-ARCHITECTURE
-version: 3
-last_verified: 2026-05-20
+version: 4
+last_verified: 2026-06-08
 ---
 
 # Engineering Index
 
 > Status: active  
 > Purpose: quickly locate the correct file to change  
-> Last updated: 2026-05-20
+> Last updated: 2026-06-08
 
 ## 1. Directories
 
@@ -55,6 +55,39 @@ last_verified: 2026-05-20
 
 - behavior: `SKILLS/dual-agent-conflict-gate/conflict_gate.py`
 - boundaries & contracts: `SKILLS/dual-agent-conflict-gate/gatekeeper_config.json`
+
+### 2.6 GitHub x 飞书接入 / 排障 / 案例
+
+- 接入规范：`docs/github-feishu-integration-handbook.md`
+- 故障手册：`docs/github-feishu-troubleshooting.md`
+- E2E 案例索引：`docs/github-feishu-e2e-case-index.md`
+- 新 Base 执行清单：`docs/github-feishu-new-base-e2e-runbook.md`
+- 设计总览：`docs/github-feishu-okr-knowledgebase-design.md`
+
+### 2.x Dream-Agent Hybrid Dispatch
+
+- 设计：`docs/superpowers/specs/2026-06-07-dream-agent-hybrid-unit-dispatch-design.md`
+- 计划：`docs/superpowers/plans/2026-06-07-dream-agent-hybrid-unit-dispatch-implementation.md`
+- 样板单元：`task-strategy-mainline-ticket-001`
+
+### 2.x GitHub x 飞书协作闭环修复
+
+- 设计：`docs/superpowers/specs/2026-06-07-github-feishu-collaboration-closure-repair-design.md`
+- 计划：`docs/superpowers/plans/2026-06-07-github-feishu-collaboration-closure-repair-implementation.md`
+
+### 飞书目标驱动进度监控与风险审批
+
+- 设计：`docs/superpowers/specs/2026-06-07-feishu-goal-driven-progress-and-risk-approval-design.md`
+- 计划：`docs/superpowers/plans/2026-06-07-feishu-goal-driven-progress-and-risk-approval-implementation.md`
+
+### 飞书审批成功闭环 / 真实 smoke
+
+- 设计：`docs/superpowers/specs/2026-06-08-feishu-approval-success-closure-design.md`
+- 计划：`docs/superpowers/plans/2026-06-08-feishu-approval-success-closure-implementation.md`
+- 成功记录：`README.md` 中的 `Feishu Approval Real Smoke Status`
+- 关键坑点：审批请求里的 `form` 必须是 JSON 字符串，申请人 `ou_...` 必须走 `open_id`
+- Node24 兼容处理：`.github/workflows/collab-acceptance-agent.yml`、`.github/workflows/collab-validator-agent.yml`
+- 运行时校验：`github-actions/tests/test_collab_workflows_present.py`
 
 ## 3. Gate Evidence Checklist (Where to Look)
 

@@ -1,0 +1,17 @@
+{
+  "event_name": "check_run",
+  "action": "completed",
+  "repository": {
+    "full_name": "yunya1991/DREAM-AGENT"
+  },
+  "check_run": {
+    "name": "collab-acceptance-agent",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/yunya1991/DREAM-AGENT/actions/runs/778899",
+    "head_sha": "abc123def456"
+  },
+  "sender": {
+    "login": "github-actions[bot]"
+  }
+}

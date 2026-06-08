@@ -45,7 +45,7 @@ jobs:
           gh pr view ${PR_NUMBER} --json comments --jq '.comments[].body' > pr_comments.txt || true
           echo "comment_file=pr_comments.txt" >> "$GITHUB_OUTPUT"
 
-      - name: Protocol completeness check
+      - name: Build collaboration closure payload
         run: |
           started_ok=0
           test_report_ok=0
@@ -61,8 +61,14 @@ jobs:
             validation_ok=1
           fi
 
+          implementation_status="in_progress"
+          if [ "$test_report_ok" -eq 1 ]; then
+            implementation_status="tested"
+          fi
+
+          governance_status="review_required"
           if [ "$started_ok" -eq 1 ] && [ "$test_report_ok" -eq 1 ] && [ "$validation_ok" -eq 1 ]; then
-            exit 0
+            governance_status="ready"
           fi
 
           next_action="developer: post TEST_REPORT; validator: post VALIDATION_RESULT with Governance Handoff: ledgered"
@@ -74,24 +80,114 @@ jobs:
             next_action="validator: re-run build/test and post VALIDATION_RESULT"
           fi
 
+          gh pr checks "${PR_NUMBER}" --json bucket,state > pr_checks.json || printf '[]\n' > pr_checks.json
+          platform_status="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          checks = json.loads(Path("pr_checks.json").read_text(encoding="utf-8"))
+          if not checks:
+              print("checks_pending")
+              raise SystemExit
+
+          failure_states = {
+              "ACTION_REQUIRED",
+              "CANCELLED",
+              "ERROR",
+              "FAILURE",
+              "STARTUP_FAILURE",
+              "TIMED_OUT",
+          }
+          pending_states = {"EXPECTED", "IN_PROGRESS", "PENDING", "QUEUED", "REQUESTED", "WAITING"}
+          success_states = {"NEUTRAL", "SKIPPED", "SUCCESS"}
+
+          states = {str(item.get("state", "")).upper() for item in checks}
+          buckets = {str(item.get("bucket", "")).upper() for item in checks}
+
+          if "FAIL" in buckets or any(state in failure_states for state in states):
+              print("checks_failing")
+          elif "PENDING" in buckets or any(state in pending_states for state in states):
+              print("checks_pending")
+          elif states and all(state in success_states for state in states):
+              print("checks_green")
+          else:
+              print("workflow_failed")
+          PY
+          )"
+
+          if [ "$governance_status" = "ready" ] && [ "$platform_status" != "checks_green" ]; then
+            next_action="platform: wait for green checks before governance release"
+          fi
+
+          python3 github-actions/build_collaboration_closure_payload.py <<EOF > closure_payload.json
           {
-            printf '%s\n' \
-              '[协作状态更新 / UPDATED]' \
-              '' \
-              'Agent: collab-governance-agent' \
-              "任务: protocol completeness check for PR${PR_NUMBER}" \
-              'Execution Mode: STANDARD' \
-              'Direct Takeover: no' \
-              'Governance Agent: collab-governance-agent' \
-              'Task Type: shared-sync' \
-              'Current Sync State: pending' \
-              "Next Required Action: ${next_action}" \
-              '变更说明:' \
-              '- protocol anchor missing' \
-              '' \
-              '当前占用范围:' \
-              '- (see STARTED comment)' \
-              '' \
-              '状态: UPDATED'
-          } > pr_updated.md
-          gh pr comment ${PR_NUMBER} --body-file pr_updated.md
+            "task_id": "${{ env.TASK_ID }}",
+            "pr_number": "${{ env.PR_NUMBER }}",
+            "repo": "${{ github.repository }}",
+            "branch": "${{ github.head_ref || github.ref_name }}",
+            "implementation_status": "${implementation_status}",
+            "platform_status": "${platform_status}",
+            "governance_status": "${governance_status}",
+            "automation_status": "running",
+            "next_action": "${next_action}"
+          }
+          EOF
+
+      - name: Check collaboration closure
+        run: |
+          python3 github-actions/check_collaboration_closure.py < closure_payload.json > closure_check.json
+          cat closure_check.json
+
+      - name: Publish governance status update
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          payload = json.loads(Path("closure_payload.json").read_text(encoding="utf-8"))
+          result = json.loads(Path("closure_check.json").read_text(encoding="utf-8"))
+
+          governance_status = payload.get("governance_status", "")
+          decision = result.get("decision", "PASS")
+          if governance_status == "ready" and decision == "PASS":
+              raise SystemExit(0)
+
+          next_action = payload.get("next_action", "")
+          if decision == "BLOCK":
+              next_action = "platform: wait for green checks before governance release"
+
+          lines = [
+              "[协作状态更新 / UPDATED]",
+              "",
+              "Agent: collab-governance-agent",
+              f"任务: governance closure review for PR{os.environ['PR_NUMBER']}",
+              "Execution Mode: STANDARD",
+              "Direct Takeover: no",
+              "Governance Agent: collab-governance-agent",
+              "Task Type: shared-sync",
+              "Current Sync State: pending",
+              f"Next Required Action: {next_action}",
+              f"Implementation Status: {payload.get('implementation_status', '')}",
+              f"Platform Status: {payload.get('platform_status', '')}",
+              f"Governance Status: {payload.get('governance_status', '')}",
+              f"Automation Status: {payload.get('automation_status', '')}",
+              "变更说明:",
+              f"- release_decision={result.get('release_decision', 'hold')}",
+              f"- reason_codes={', '.join(result.get('reason_codes', [])) or 'none'}",
+              "",
+              "当前占用范围:",
+              "- (see STARTED comment)",
+              "",
+              "状态: UPDATED",
+          ]
+          Path("pr_updated.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          subprocess.run(
+              ["gh", "pr", "comment", os.environ["PR_NUMBER"], "--body-file", "pr_updated.md"],
+              check=True,
+          )
+          if decision == "BLOCK":
+              raise SystemExit(1)
+          PY

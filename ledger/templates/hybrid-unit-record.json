@@ -1,0 +1,66 @@
+{
+  "unit_id": "unit-strategy-task-ticket-001",
+  "unit_name": "策略设置成功 -> 生成策略任务单",
+  "track": "strategy-mainline",
+  "goal": "把策略设置结果转换成可追踪任务单",
+  "frontend_surface": {
+    "route": "/ui-map",
+    "entry": "strategy-status-card",
+    "visible_state": "ticket-ready"
+  },
+  "platform_capability": {
+    "service": "strategy-task-ticket-service",
+    "input_contract": "strategy-setting-result",
+    "output_contract": "strategy-task-ticket"
+  },
+  "execution_path": [
+    "read strategy setting result",
+    "create task ticket object",
+    "persist ticket identifier",
+    "emit acceptance-ready state"
+  ],
+  "acceptance_target": {
+    "mode": "chain-runnable",
+    "required_evidence": [
+      "ticket_id",
+      "ticket_status",
+      "workflow_run_id"
+    ]
+  },
+  "collaboration_asset_surface": {
+    "base_record_required": true,
+    "okr_link_required": false,
+    "docs_sync_required": true
+  },
+  "feishu_asset_mode": "degraded-with-backfill",
+  "dependencies": [],
+  "suggested_agents": [
+    "collab-developer-agent",
+    "collab-validator-agent",
+    "collab-governance-agent"
+  ],
+  "handoff_contract": {
+    "required_outputs": [
+      "ticket_id",
+      "acceptance_request_id",
+      "version_anchor"
+    ]
+  },
+  "fallback_strategy": "GitHub-only with Feishu backfill",
+  "version_anchor": {
+    "git_commit_before": "",
+    "git_branch_or_pr_ref": "",
+    "workflow_run_id": "",
+    "acceptance_request_id": "",
+    "feishu_asset_before_snapshot": ""
+  },
+  "rollback_strategy": {
+    "default_level": "unit",
+    "trigger": [
+      "validator_direction_error",
+      "acceptance_chain_failed"
+    ],
+    "owner": "governance-agent"
+  },
+  "next_unit": "unit-strategy-ticket-execution-002"
+}

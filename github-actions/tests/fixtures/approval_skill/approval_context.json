@@ -1,0 +1,22 @@
+{
+  "approval_code": "APPROVAL-001",
+  "applicant_open_id": "ou_demo_applicant",
+  "instance_external_id": "task-approval-001",
+  "form_payload": [
+    {
+      "id": "decision_id",
+      "type": "textarea",
+      "value": "task-approval-001"
+    },
+    {
+      "id": "trigger_reason",
+      "type": "textarea",
+      "value": "high_risk_scope:release_handoff"
+    }
+  ],
+  "source_refs": [
+    "task-approval-001",
+    "goal-collab-approval-001"
+  ],
+  "target_object_id": "task-approval-001"
+}

@@ -56,7 +56,34 @@ def build_governance_closure(
     }
 
 
+def normalize_version_anchor(anchor):
+    anchor = anchor or {}
+    return {
+        "git_commit_before": anchor.get("git_commit_before", ""),
+        "git_branch_or_pr_ref": anchor.get("git_branch_or_pr_ref", ""),
+        "workflow_run_id": anchor.get("workflow_run_id", ""),
+        "acceptance_request_id": anchor.get("acceptance_request_id", ""),
+        "feishu_asset_before_snapshot": anchor.get("feishu_asset_before_snapshot", ""),
+    }
+
+
+def normalize_closure_status(task):
+    task["implementation_status"] = task.get("implementation_status", "planned")
+    task["platform_status"] = task.get("platform_status", "no_pr")
+    task["governance_status"] = task.get("governance_status", "draft")
+    task["automation_status"] = task.get("automation_status", "idle")
+    task["goal_id"] = task.get("goal_id", "")
+    task["risk_level"] = task.get("risk_level", "low")
+    task["approval_status"] = task.get("approval_status", "not_required")
+    task["approval_decision_id"] = task.get("approval_decision_id", "")
+    task["approval_due_at"] = task.get("approval_due_at", "")
+    task["decision_summary"] = task.get("decision_summary", "")
+    return task
+
+
 def apply_status_transition(task, requested_status):
+    task = normalize_closure_status(task)
+    task["version_anchor"] = normalize_version_anchor(task.get("version_anchor"))
     current_status = task.get("status")
     if current_status == requested_status:
         return task, {

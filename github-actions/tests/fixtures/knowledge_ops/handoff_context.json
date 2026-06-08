@@ -1,0 +1,6 @@
+{
+  "source_skill": "feishu-collab-approval",
+  "handoff_summary": "Approval timed out and needs manual review",
+  "target_object_id": "task-approval-001",
+  "goal_id": "goal-collab-approval-001"
+}

@@ -3,9 +3,14 @@
 Validator: <validator agent>
 Validation Mode: <delivery | acceptance>
 Acceptance Request ID: <request id | none>
+Acceptance Cycle ID: <cycle id | none>
 Hard Gate Result: <PASS | BLOCK>
 Score: <0-100>
 Decision: <ACCEPTED | REWORK | BLOCK>
+Implementation Status: <planned | in_progress | implemented | tested>
+Platform Status: <no_pr | checks_pending | checks_green | checks_failing | workflow_failed>
+Validation Decision: <PASS | BLOCK>
+Governance Recommendation: <hold | review_required | blocked | ready_for_release | released>
 Protocol Read Result: <PASS | PARTIAL | FAIL>
 Source of Truth Verdict: <usable | ambiguous | invalid>
 Reason Codes:

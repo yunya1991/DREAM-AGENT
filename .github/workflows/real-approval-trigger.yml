@@ -1,0 +1,132 @@
+name: real-approval-trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval_code:
+        description: Feishu approval code
+        required: true
+        type: string
+      applicant_open_id:
+        description: Applicant open id
+        required: true
+        type: string
+      task_payload_json:
+        description: Task payload JSON
+        required: true
+        type: string
+      goal_payload_json:
+        description: Goal payload JSON
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  real-approval:
+    runs-on: [self-hosted, macOS, workbuddy]
+    steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize result placeholders
+        run: |
+          printf '{}\n' > approval_dispatch_result.json
+          printf '{}\n' > approval_status_result.json
+
+      - name: Mint lark tenant access token
+        env:
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          payload = json.dumps(
+              {
+                  "app_id": os.environ["LARK_APP_ID"],
+                  "app_secret": os.environ["LARK_APP_SECRET"],
+              }
+          ).encode("utf-8")
+          request = urllib.request.Request(
+              "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+              data=payload,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read().decode("utf-8"))
+          if result.get("code") != 0 or not result.get("tenant_access_token"):
+              raise SystemExit(json.dumps(result, ensure_ascii=False))
+          print(f"::add-mask::{result['tenant_access_token']}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              fh.write(f"LARK_TENANT_ACCESS_TOKEN={result['tenant_access_token']}\n")
+          PY
+
+      - name: Build approval dispatch payload
+        env:
+          APPROVAL_CODE: ${{ inputs.approval_code }}
+          APPLICANT_OPEN_ID: ${{ inputs.applicant_open_id }}
+          TASK_PAYLOAD_JSON: ${{ inputs.task_payload_json }}
+          GOAL_PAYLOAD_JSON: ${{ inputs.goal_payload_json }}
+          LARK_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+        run: |
+          python3 - <<'PY' > approval_dispatch_input.json
+          import json
+          import os
+
+          payload = {
+              "approval_code": os.environ["APPROVAL_CODE"],
+              "applicant_open_id": os.environ["APPLICANT_OPEN_ID"],
+              "tenant_access_token": os.environ["LARK_TENANT_ACCESS_TOKEN"],
+              "task_payload": json.loads(os.environ["TASK_PAYLOAD_JSON"]),
+              "goal_payload": json.loads(os.environ["GOAL_PAYLOAD_JSON"]),
+              "sibling_tasks": [],
+          }
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Run real approval dispatch
+        run: |
+          python3 github-actions/run_real_approval_dispatch.py < approval_dispatch_input.json > approval_dispatch_result.json
+
+      - name: Build approval status query payload
+        env:
+          LARK_TENANT_ACCESS_TOKEN: ${{ env.LARK_TENANT_ACCESS_TOKEN }}
+        run: |
+          python3 - <<'PY' > approval_status_input.json
+          import json
+          import os
+          from pathlib import Path
+
+          dispatch = json.loads(Path("approval_dispatch_result.json").read_text(encoding="utf-8"))
+          payload = {
+              "tenant_access_token": os.environ["LARK_TENANT_ACCESS_TOKEN"],
+              "approval_instance_code": dispatch.get("approval_instance_code", ""),
+              "decision_id": dispatch.get("task_id", ""),
+          }
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Query real approval status
+        run: |
+          python3 github-actions/query_real_approval_status.py < approval_status_input.json > approval_status_result.json
+
+      - name: Render approval summary
+        if: always()
+        run: |
+          python3 github-actions/render_real_approval_summary.py approval_dispatch_result.json approval_status_result.json
+
+      - name: Upload approval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-approval-trigger-${{ github.run_id }}
+          path: |
+            approval_dispatch_result.json
+            approval_status_result.json

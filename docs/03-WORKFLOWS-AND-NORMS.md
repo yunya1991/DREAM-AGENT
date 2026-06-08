@@ -133,6 +133,49 @@ created_at: 2026-05-20
 13. If `REWORK`, `BLOCK`, or `Must-Fix Items` exist, fix them before continuing mainline work.
 14. Governance AGENT merges after all gates pass.
 
+### 2.1 V2 串行验收链
+
+1. `context-reader` 读取飞书 `work item` 和可选 `Objective / KR`
+2. `protocol-checker` 校验 `ACCEPTANCE_REQUEST` 结构化完整性
+3. `acceptance-validator` 形成当前轮次的验收判断
+4. `result-synthesizer` 回写唯一正式 `VALIDATION_RESULT`
+
+规则：
+
+- GitHub `VALIDATION_RESULT` 是正式验收真源
+- 飞书只允许回写摘要字段，不允许回写正式主结论字段
+
+### 2.2 2026-06-07 真实 E2E 结论
+
+`PR #7` 上已完成真实 `workflow_dispatch` 联调。首个全链路成功 run 为 `27085309457`（头提交 `47d9432`），后续修复 `work_item_title` 摘要字段后的验证 run 为 `27085416975`（头提交 `09d5815`），再后续验证 OKR 摘要渲染代码已上线的 run 为 `27085868440`（头提交 `7089809`），以及验证“原始 `Objective ID / KR ID` 也应出现在评论中”的 run 为 `27086007210`（头提交 `1b999a2`）。
+
+本轮已真实打通以下链路：
+
+1. `ACCEPTANCE_REQUEST` 解析
+2. `acceptance_cycle` 创建 / 加载
+3. 飞书开发者应用 / bot 方式 mint `tenant_access_token`
+4. 使用 `lark-cli --as bot` 读取真实 Base record
+5. 运行串行 4 角色 `acceptance cycle`
+6. GitHub 回写正式 `VALIDATION_RESULT`
+
+本轮收口出的运行约束：
+
+- runner 中不得依赖交互式 `user` 登录态
+- `lark-cli` 外部凭据模式必须通过环境变量注入
+- workflow 需要先调用 `tenant_access_token/internal` 获取 `tenant_access_token`
+- 所有会再次读取飞书上下文的步骤都必须继承同一组 bot 环境变量
+- `work_item_title` 不得只依赖 `Title` 字段，需兼容真实多维表格中的 `任务` 字段
+
+当前结论：
+
+- GitHub 仍是正式验收真源
+- 飞书 bot 已成为 runner 里的稳定上下文读取身份
+- `Acceptance Orchestration V2` 已完成一次真实 PR 评论驱动 E2E 闭环验证
+- `VALIDATION_RESULT` 的 `Context Snapshot` 已能回写真实 `work_item_title`
+- 若上下文中存在 `objective` / `key_result`，`VALIDATION_RESULT` 的 `Context Snapshot` 也必须显式呈现 OKR 摘要字段
+- `27085868440` 已验证 OKR 摘要渲染代码随 `7089809` 生效，但当前真实验收记录仍未提供可读的 `Objective ID / KR ID`，因此 PR 评论中尚未出现 OKR 摘要行
+- `27086007210` 已进一步验证：即使评论渲染逻辑主动输出 work item 上的原始 `Objective ID / KR ID` 字段，真实评论中仍无对应行，说明当前 Base record 本身未挂 OKR 字段值
+
 ## 3. Role-Specific Norms
 
 ### 3.1 Ledger/Protocol AGENT
