@@ -1,0 +1,38 @@
+name: five-skill-rehearsal
+
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: five-skill-rehearsal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rehearsal:
+    runs-on: [self-hosted, macOS, workbuddy]
+    steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run five skill rehearsal
+        run: |
+          python3 github-actions/run_five_skill_integration_rehearsal.py > five-skill-rehearsal-report.json
+
+      - name: Render rehearsal summary
+        run: |
+          python3 github-actions/render_rehearsal_workflow_summary.py five-skill-rehearsal-report.json
+
+      - name: Upload rehearsal artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-skill-rehearsal-${{ github.run_id }}
+          path: five-skill-rehearsal-report.json
