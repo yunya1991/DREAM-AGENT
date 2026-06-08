@@ -15,6 +15,7 @@ Every production-facing skill execution that changes online state must end with 
 
 | Runbook | Path | Purpose |
 | --- | --- | --- |
+| Final Acceptance Checklist | `docs/feishu-collab/runbooks/final-acceptance-checklist.md` | Validate the merged mainline end to end and hand off operator evidence across approval, writeback, and knowledge materialization |
 | Knowledge Materialization | `docs/feishu-collab/runbooks/knowledge-materialization.md` | Materialize approval and polling artifacts into governed runbook and handoff documents |
 | Five Skill Integration Rehearsal | `docs/feishu-collab/runbooks/five-skill-integration-rehearsal.md` | Run the fixture-driven full-chain rehearsal and interpret the normalized result |
 | Real Approval Trigger | `docs/feishu-collab/runbooks/real-approval-trigger.md` | Create a real approval instance and capture the first approval-status evidence |
