@@ -1,0 +1,14 @@
+{
+  "task_id": "task-approval-001",
+  "goal_id": "goal-collab-approval-001",
+  "risk_level": "high",
+  "task_scope": "release_handoff",
+  "trigger_reason": "high_risk_scope:release_handoff",
+  "owner": "governance-agent",
+  "recommended_option": "human_review",
+  "timeout_fallback": {
+    "action": "pause",
+    "is_safe": false,
+    "decision_summary": "waiting_for_manual_decision"
+  }
+}
