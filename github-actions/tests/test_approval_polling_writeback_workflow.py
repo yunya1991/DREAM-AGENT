@@ -27,6 +27,7 @@ class ApprovalPollingWritebackWorkflowTests(unittest.TestCase):
         self.assertIn("python3 github-actions/query_real_approval_status.py", text)
         self.assertIn("python3 github-actions/run_approval_polling_writeback.py", text)
         self.assertIn("python3 github-actions/render_approval_polling_writeback_summary.py", text)
+        self.assertIn("decoder.raw_decode", text)
 
     def test_workflow_uploads_artifacts_even_on_failure(self):
         text = self.read_workflow()
