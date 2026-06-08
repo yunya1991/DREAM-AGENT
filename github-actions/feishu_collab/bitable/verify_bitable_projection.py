@@ -5,6 +5,10 @@ import sys
 def verify_bitable_projection(task_records, progress_records, goal_projection, view_validation):
     if not task_records or not progress_records or not goal_projection:
         status = "blocked"
+    elif {item["task_id"] for item in task_records} != {
+        item["task_ref"] for item in progress_records
+    }:
+        status = "soft_block"
     elif not view_validation:
         status = "degraded_success"
     else:

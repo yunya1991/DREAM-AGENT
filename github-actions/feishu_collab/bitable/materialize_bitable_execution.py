@@ -14,7 +14,7 @@ WRITEBACK_ORDER = [
 def materialize_bitable_execution(preview):
     missing_fields = preview["field_governance_report"].get("missing_fields", [])
     view_candidates = preview.get("view_projection_candidates", [])
-    status = "ready"
+    status = "confirmed"
     if missing_fields:
         status = "hard_block"
     elif not view_candidates:
@@ -31,6 +31,13 @@ def materialize_bitable_execution(preview):
             "asset_type": "delivery",
             "title": "bitable-writeback-result",
             "summary": f"status={status}",
+            "evidence_refs": [item["task_id"] for item in preview["task_record_candidates"]],
+        },
+        "handoff": {
+            "type": "stage_handoff",
+            "status": status,
+            "summary": f"bitable execution {status}",
+            "next_action": "review verification result",
             "evidence_refs": [item["task_id"] for item in preview["task_record_candidates"]],
         },
     }

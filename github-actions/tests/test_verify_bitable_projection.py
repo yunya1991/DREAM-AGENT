@@ -44,6 +44,16 @@ class VerifyBitableProjectionTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "degraded_success")
 
+    def test_verify_returns_soft_block_when_task_and_progress_refs_do_not_match(self):
+        module = self.load_module()
+        result = module.verify_bitable_projection(
+            task_records=[{"task_id": "task-1"}],
+            progress_records=[{"task_ref": "task-2"}],
+            goal_projection=[{"goal_id": "goal-1", "workflow_signal": "healthy"}],
+            view_validation=[{"view_name": "老板视图（状态与阻塞）"}],
+        )
+        self.assertEqual(result["status"], "soft_block")
+
 
 if __name__ == "__main__":
     unittest.main()

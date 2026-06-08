@@ -69,6 +69,7 @@ class MaterializeBitableExecutionTests(unittest.TestCase):
     def test_materialize_builds_writeback_order_and_knowledge_update(self):
         module = self.load_module()
         result = module.materialize_bitable_execution(self.sample_preview())
+        self.assertEqual(result["status"], "confirmed")
         self.assertEqual(
             result["writeback_order"],
             [
@@ -80,6 +81,8 @@ class MaterializeBitableExecutionTests(unittest.TestCase):
             ],
         )
         self.assertEqual(result["knowledge_update"]["asset_type"], "delivery")
+        self.assertEqual(result["handoff"]["type"], "stage_handoff")
+        self.assertEqual(result["handoff"]["status"], "confirmed")
 
     def test_materialize_marks_hard_block_when_required_fields_missing(self):
         module = self.load_module()
