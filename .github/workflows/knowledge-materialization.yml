@@ -1,0 +1,68 @@
+name: knowledge-materialization
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval_status_result_json:
+        description: Approval status result JSON
+        required: true
+        type: string
+      approval_writeback_result_json:
+        description: Approval writeback result JSON
+        required: true
+        type: string
+      materialization_context_json:
+        description: Knowledge materialization context JSON
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  knowledge-materialization:
+    runs-on: [self-hosted, macOS, workbuddy]
+    steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize result placeholder
+        run: |
+          printf '{}\n' > knowledge_materialization_result.json
+
+      - name: Build materialization payload
+        env:
+          APPROVAL_STATUS_RESULT_JSON: ${{ inputs.approval_status_result_json }}
+          APPROVAL_WRITEBACK_RESULT_JSON: ${{ inputs.approval_writeback_result_json }}
+          MATERIALIZATION_CONTEXT_JSON: ${{ inputs.materialization_context_json }}
+        run: |
+          python3 - <<'PY' > knowledge_materialization_input.json
+          import json
+          import os
+
+          payload = {
+              "approval_status_result": json.loads(os.environ["APPROVAL_STATUS_RESULT_JSON"]),
+              "approval_writeback_result": json.loads(os.environ["APPROVAL_WRITEBACK_RESULT_JSON"]),
+              "materialization_context": json.loads(os.environ["MATERIALIZATION_CONTEXT_JSON"]),
+          }
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Run real knowledge materialization
+        run: |
+          python3 github-actions/run_real_knowledge_materialization.py < knowledge_materialization_input.json > knowledge_materialization_result.json
+
+      - name: Render knowledge materialization summary
+        if: always()
+        run: |
+          python3 github-actions/render_real_knowledge_materialization_summary.py knowledge_materialization_result.json
+
+      - name: Upload knowledge materialization artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: knowledge-materialization-${{ github.run_id }}
+          path: |
+            knowledge_materialization_result.json
