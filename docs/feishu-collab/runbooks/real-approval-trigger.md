@@ -31,3 +31,7 @@ The workflow succeeds only when the approval instance is created and the follow-
 ## Evidence First
 
 Even on failure, keep the uploaded artifacts and the Job Summary. They are the primary debugging evidence for this stage.
+
+## Next Step
+
+After the approval instance exists, use `.github/workflows/approval-polling-writeback.yml` to continue from status evidence into task/goal writeback.
