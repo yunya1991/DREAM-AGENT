@@ -7,25 +7,58 @@ OBJECTIVE_RE = re.compile(r"Objective[：:]\s*(.+)")
 KR_RE = re.compile(r"KR\d+[：:]\s*(.+)")
 GOAL_ID_RE = re.compile(r"goal_id\s*=\s*([A-Za-z0-9\-_]+)")
 GOAL_NAME_RE = re.compile(r"目标名称\s*=\s*(.+)")
+DESIGN_GOAL_RE = re.compile(r"目标[：:]\s*(.+)")
+
+def _first_match(texts, patterns):
+    for text in texts:
+        for pattern in patterns:
+            match = pattern.search(text)
+            if match:
+                return match.group(1).strip()
+    return ""
 
 
-def _extract_objective(spec_text):
-    match = OBJECTIVE_RE.search(spec_text)
-    return match.group(1).strip() if match else ""
+def _clean_extracted_text(value):
+    cleaned = value.strip()
+    cleaned = cleaned.replace("\\n", "")
+    cleaned = cleaned.rstrip('",')
+    cleaned = cleaned.strip()
+    return cleaned
 
 
-def _extract_krs(spec_text):
-    return [match.group(1).strip() for match in KR_RE.finditer(spec_text)]
+def _extract_objective(spec_text, plan_text):
+    objective = _first_match((spec_text, plan_text), (OBJECTIVE_RE,))
+    if objective:
+        return _clean_extracted_text(objective)
+    return _clean_extracted_text(_first_match((spec_text,), (DESIGN_GOAL_RE,)))
 
 
-def _extract_goal(spec_text):
-    goal_id_match = GOAL_ID_RE.search(spec_text)
-    goal_name_match = GOAL_NAME_RE.search(spec_text)
-    goal_id = goal_id_match.group(1) if goal_id_match else "goal-missing-id"
-    goal_name = goal_name_match.group(1).strip() if goal_name_match else "未命名目标"
+def _extract_krs(spec_text, plan_text):
+    titles = []
+    seen = set()
+    for text in (spec_text, plan_text):
+        for match in KR_RE.finditer(text):
+            title = _clean_extracted_text(match.group(1))
+            if title and title not in seen:
+                seen.add(title)
+                titles.append(title)
+    return [
+        title
+        for title in titles
+        if not any(other != title and other.startswith(title) for other in titles)
+    ]
+
+
+def _extract_goal(spec_text, plan_text, objective_title):
+    goal_id = _first_match((spec_text, plan_text), (GOAL_ID_RE,)) or "goal-missing-id"
+    goal_name = _first_match((spec_text, plan_text), (GOAL_NAME_RE,))
+    if not goal_name:
+        goal_name = _first_match((spec_text,), (DESIGN_GOAL_RE,))
+    if not goal_name:
+        goal_name = objective_title.split("，", 1)[0] if objective_title else "未命名目标"
     return {
         "goal_id": str(goal_id),
-        "goal_name": goal_name,
+        "goal_name": _clean_extracted_text(goal_name),
         "goal_owner": "governance-agent",
         "goal_status": "blocked",
         "risk_level": "high",
@@ -80,9 +113,9 @@ def _extract_workflow_candidates(plan_text, goal_id):
 
 
 def build_preview(spec_text, plan_text):
-    objective_title = _extract_objective(spec_text)
-    kr_titles = _extract_krs(spec_text)
-    goal = _extract_goal(spec_text)
+    objective_title = _extract_objective(spec_text, plan_text)
+    kr_titles = _extract_krs(spec_text, plan_text)
+    goal = _extract_goal(spec_text, plan_text, objective_title)
     tasks = _extract_task_candidates(plan_text, goal["goal_id"], kr_titles)
     workflows = _extract_workflow_candidates(plan_text, goal["goal_id"])
 

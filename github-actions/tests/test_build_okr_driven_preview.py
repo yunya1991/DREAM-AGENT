@@ -7,6 +7,16 @@ ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "github-actions" / "build_okr_driven_preview.py"
 SPEC = importlib.util.spec_from_file_location("build_okr_driven_preview", MODULE_PATH)
 FIXTURE_DIR = ROOT / "github-actions" / "tests" / "fixtures" / "okr_driven_skill"
+APPROVED_SPEC = (
+    ROOT / "docs" / "superpowers" / "specs" / "2026-06-08-okr-driven-skill-design.md"
+)
+APPROVED_PLAN = (
+    ROOT
+    / "docs"
+    / "superpowers"
+    / "plans"
+    / "2026-06-08-okr-driven-skill-implementation.md"
+)
 
 
 class BuildOkrDrivenPreviewTests(unittest.TestCase):
@@ -52,6 +62,32 @@ class BuildOkrDrivenPreviewTests(unittest.TestCase):
         goal = preview["goal_record_candidates"][0]
         self.assertIsInstance(goal["goal_id"], str)
         self.assertIsInstance(goal["okr_anchor_ref"], str)
+
+    def test_preview_extracts_real_values_from_approved_sources(self):
+        module = self.load_module()
+        preview = module.build_preview(
+            spec_text=APPROVED_SPEC.read_text(encoding="utf-8"),
+            plan_text=APPROVED_PLAN.read_text(encoding="utf-8"),
+        )
+        self.assertEqual(
+            preview["objective_candidates"][0]["title"],
+            "中台与前端联动验证能力打通，并形成可持续的目标驱动建设机制",
+        )
+        self.assertEqual(
+            preview["goal_record_candidates"][0]["goal_id"],
+            "goal-trading-hub-connectivity-20260519",
+        )
+        self.assertEqual(
+            preview["goal_record_candidates"][0]["goal_name"],
+            "中台与前端联动验证能力打通",
+        )
+        self.assertEqual(len(preview["kr_candidates"]), 4)
+        self.assertEqual(
+            preview["kr_candidates"][0]["title"],
+            "Hub 到 Trading 的实时桥接能力可运行，摆脱前端代理和目录投递的临时链路",
+        )
+        self.assertGreaterEqual(len(preview["task_candidates"]), 2)
+        self.assertGreaterEqual(len(preview["workflow_candidates"]), 1)
 
 
 if __name__ == "__main__":
