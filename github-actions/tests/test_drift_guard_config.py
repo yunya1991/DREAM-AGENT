@@ -57,6 +57,14 @@ class DriftGuardConfigTests(unittest.TestCase):
 
             self.assertEqual(ctx.exception.reason_code, "CONFIG_YAML_UNSUPPORTED")
 
+    def test_diff_files_decodes_quoted_non_ascii_paths(self):
+        escaped = '"7-\\344\\272\\247\\347\\211\\251\\344\\270\\255\\345\\217\\260/docs/FAQ.md"'
+
+        with mock.patch.object(DRIFT_GUARD, "_run", return_value=escaped):
+            changed_files = DRIFT_GUARD._diff_files("origin/main", "HEAD")
+
+        self.assertEqual(changed_files, ["7-产物中台/docs/FAQ.md"])
+
 
 if __name__ == "__main__":
     unittest.main()
