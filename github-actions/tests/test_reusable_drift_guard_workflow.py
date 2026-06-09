@@ -13,13 +13,15 @@ class ReusableDriftGuardWorkflowTests(unittest.TestCase):
         text = workflow.read_text(encoding="utf-8")
         self.assertIn("name: reusable-drift-guard", text)
         self.assertIn("workflow_call:", text)
-        self.assertIn("id: source_ref", text)
+        self.assertIn("source_ref:", text)
         self.assertIn("repository: yunya1991/DREAM-AGENT", text)
         self.assertIn("path: .workbuddy/_dream_agent_source", text)
+        self.assertIn("ref: ${{ inputs.source_ref }}", text)
         self.assertIn(
             "uses: ./.workbuddy/_dream_agent_source/.github/actions/drift-guard",
             text,
         )
+        self.assertNotIn("WORKFLOW_REF: ${{ github.workflow_ref }}", text)
         self.assertNotIn("uses: ./.github/actions/drift-guard", text)
         self.assertIn("uses: actions/upload-artifact@v4", text)
         self.assertIn("uses: actions/github-script@v7", text)
