@@ -96,7 +96,7 @@ jobs:
             let inputs = {}
             try {
               const raw = ${{ toJSON(inputs.trigger_inputs_json) }}
-              inputs = JSON.parse(JSON.parse(raw))
+              inputs = JSON.parse(raw)
             } catch (err) {
               core.setFailed(`trigger_inputs_json is not valid JSON: ${err}`)
               return
