@@ -75,13 +75,25 @@ def _run(cmd: Sequence[str]) -> str:
     return out.decode("utf-8", errors="replace").strip()
 
 
+def _decode_git_path(raw_path: str) -> str:
+    path = raw_path.strip()
+    if len(path) >= 2 and path.startswith('"') and path.endswith('"'):
+        inner = path[1:-1]
+        try:
+            decoded = inner.encode("utf-8").decode("unicode_escape")
+            return decoded.encode("latin-1").decode("utf-8")
+        except Exception:
+            return inner
+    return path
+
+
 def _diff_files(base_sha: str, head_sha: str) -> List[str]:
     try:
         out = _run(["git", "diff", "--name-only", f"{base_sha}..{head_sha}"])
     except Exception:
         _run(["git", "fetch", "--no-tags", "origin", base_sha, head_sha])
         out = _run(["git", "diff", "--name-only", f"{base_sha}..{head_sha}"])
-    return [line.strip().strip('"') for line in out.splitlines() if line.strip()]
+    return [_decode_git_path(line) for line in out.splitlines() if line.strip()]
 
 
 def _path_matches(pattern: str, file_path: str) -> bool:
