@@ -1,0 +1,32 @@
+{
+  "modules": {
+    "workflows": {
+      "paths": [".github/workflows/**", ".github/actions/**"]
+    },
+    "scripts": {
+      "paths": ["github-actions/**"]
+    },
+    "docs": {
+      "paths": ["docs/**"]
+    },
+    "config": {
+      "paths": [".workbuddy/**"]
+    }
+  },
+  "change_classes": {
+    "mainline": {
+      "allowed_modules": ["workflows", "scripts", "docs", "config"]
+    },
+    "integration": {
+      "allowed_modules": ["workflows", "scripts", "docs", "config"]
+    },
+    "infra": {
+      "allowed_modules": ["workflows", "scripts", "docs", "config"]
+    }
+  },
+  "required_docs": [
+    "docs/01-COLLABORATION-PROTOCOL.md",
+    "docs/03-WORKFLOWS-AND-NORMS.md",
+    "docs/self-hosted-runner.md"
+  ]
+}
