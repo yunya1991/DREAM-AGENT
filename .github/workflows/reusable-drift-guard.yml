@@ -6,6 +6,9 @@ on:
       change_class:
         required: true
         type: string
+      source_ref:
+        required: true
+        type: string
       config_path:
         required: false
         type: string
@@ -33,21 +36,11 @@ jobs:
           fetch-depth: 0
           clean: true
 
-      - name: Resolve reusable workflow source ref
-        id: source_ref
-        shell: bash
-        env:
-          WORKFLOW_REF: ${{ github.workflow_ref }}
-        run: |
-          set -euo pipefail
-          ref="${WORKFLOW_REF##*@}"
-          echo "value=${ref}" >> "${GITHUB_OUTPUT}"
-
       - name: Checkout DREAM-AGENT source at workflow ref
         uses: actions/checkout@v4
         with:
           repository: yunya1991/DREAM-AGENT
-          ref: ${{ steps.source_ref.outputs.value }}
+          ref: ${{ inputs.source_ref }}
           path: .workbuddy/_dream_agent_source
           fetch-depth: 1
           clean: true
