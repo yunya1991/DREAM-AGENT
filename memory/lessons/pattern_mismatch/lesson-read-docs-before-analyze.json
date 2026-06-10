@@ -1,0 +1,15 @@
+{
+  "lesson_id": "lesson-read-docs-before-analyze",
+  "category": "process_error",
+  "severity": "medium",
+  "first_observed": "2026-06-10",
+  "observed_count": 1,
+  "last_observed": "2026-06-10T00:00:00.000000+00:00",
+  "task_ids": [
+    "feishu-collab-chain-analysis"
+  ],
+  "status": "active",
+  "root_cause_normalized": "skip_navigation_docs",
+  "situation": "直接从文件结构推断项目状态，未先读导航文档，导致误判文件散落、模块划分不清、部署单元不明确",
+  "prevention_rule": "分析前必须按顺序阅读：docs/feishu-collab/README.md → SKILL_REGISTRY.md → 04-ENGINEERING-INDEX.md，再对照实践检查"
+}

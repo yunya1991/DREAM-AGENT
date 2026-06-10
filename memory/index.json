@@ -102,6 +102,12 @@
       "file": "lessons/pattern_mismatch/lesson-auto-test-rework-fail-004-low_score.json",
       "status": "active",
       "severity": "high"
+    },
+    "lesson-read-docs-before-analyze": {
+      "file": "lessons/pattern_mismatch/lesson-read-docs-before-analyze.json",
+      "status": "active",
+      "severity": "medium",
+      "observed_count": 1
     }
   },
   "paths": {
@@ -119,7 +125,7 @@
   "patterns": {},
   "stats": {
     "total_episodes": 6,
-    "total_lessons": 2,
+    "total_lessons": 3,
     "total_paths": 2,
     "total_patterns": 0,
     "tasks_with_retrospective": 6,
