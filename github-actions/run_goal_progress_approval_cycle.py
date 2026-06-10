@@ -27,15 +27,26 @@ def utc_now():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def extract_instance_code(payload):
+    if not isinstance(payload, dict):
+        return ""
+    data = payload.get("data")
+    if isinstance(data, dict):
+        if data.get("instance_code"):
+            return data.get("instance_code", "")
+        nested = data.get("data")
+        if isinstance(nested, dict) and nested.get("instance_code"):
+            return nested.get("instance_code", "")
+    if payload.get("instance_code"):
+        return payload.get("instance_code", "")
+    return ""
+
+
 def build_approval_form(task_payload, gate_result):
-    return [
-        {"id": "decision_id", "type": "textarea", "value": task_payload.get("task_id", "")},
-        {
-            "id": "trigger_reason",
-            "type": "textarea",
-            "value": gate_result.get("trigger_reason", ""),
-        },
-    ]
+    explicit = task_payload.get("approval_form")
+    if isinstance(explicit, list):
+        return explicit
+    return []
 
 
 def is_approval_timed_out(task_payload):
@@ -100,12 +111,22 @@ def run_cycle(
             instance_external_id=task_payload.get("task_id", ""),
             form=build_approval_form(task_payload, gate_result),
         )
-        created = APPROVAL_API.create_instance(tenant_access_token, approval_body)
         task_updates["approval_status"] = "pending"
         task_updates["approval_decision_id"] = task_payload.get("task_id", "")
-        task_updates["approval_instance_code"] = created["data"]["instance_code"]
-        task_updates["decision_summary"] = "approval_created"
         task_updates["automation_status"] = "paused"
+        try:
+            created = APPROVAL_API.create_instance(tenant_access_token, approval_body)
+        except Exception as exc:
+            task_updates["decision_summary"] = "approval_create_failed"
+            task_updates["approval_create_error"] = str(exc)
+        else:
+            instance_code = extract_instance_code(created)
+            if instance_code:
+                task_updates["approval_instance_code"] = instance_code
+                task_updates["decision_summary"] = "approval_created"
+            else:
+                task_updates["decision_summary"] = "approval_create_failed"
+                task_updates["approval_create_error"] = json.dumps(created, ensure_ascii=False)
 
     goal_record = GOAL.build_goal_record(goal_payload, [task_updates, *sibling_tasks])
     return {

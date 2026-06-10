@@ -2,7 +2,44 @@ import json
 import sys
 
 
-def build_feishu_record(payload):
+def normalize_task_status(payload):
+    if payload.get("approval_status") in {"rejected", "timeout"}:
+        return "blocked"
+    if payload.get("automation_status") == "blocked":
+        return "blocked"
+    if payload.get("blocker"):
+        return "blocked"
+    if payload.get("governance_status") == "released":
+        return "done"
+    if payload.get("pr_number") or payload.get("pr_url") or payload.get("automation_status") in {
+        "running",
+        "proceed",
+        "completed",
+    }:
+        return "in_progress"
+    return "backlog"
+
+
+def build_module_task_record(payload):
+    record = {
+        "task_id": payload.get("task_id", ""),
+        "goal_id": payload.get("goal_id", ""),
+        "status": normalize_task_status(payload),
+        "pr_number": payload.get("pr_number", ""),
+        "pr_url": payload.get("pr_url", ""),
+        "comment_anchor": payload.get("last_comment_anchor", ""),
+        "blocker": payload.get("blocker", ""),
+        "next_action": payload.get("next_action", ""),
+        "owner_agent": payload.get("owner_agent", ""),
+    }
+    if payload.get("task_name"):
+        record["任务"] = payload["task_name"]
+    if payload.get("repo"):
+        record["repo"] = payload["repo"]
+    return record
+
+
+def build_monitor_record(payload):
     return {
         "任务ID": payload.get("task_id", ""),
         "任务名称": payload.get("task_name", ""),
@@ -29,9 +66,13 @@ def build_feishu_record(payload):
     }
 
 
+def build_feishu_record(payload):
+    return build_monitor_record(payload)
+
+
 def project_github_collab_state(payload):
-    return build_feishu_record(payload)
+    return build_monitor_record(payload)
 
 
 if __name__ == "__main__":
-    json.dump(build_feishu_record(json.load(sys.stdin)), sys.stdout, ensure_ascii=False, indent=2)
+    json.dump(build_monitor_record(json.load(sys.stdin)), sys.stdout, ensure_ascii=False, indent=2)

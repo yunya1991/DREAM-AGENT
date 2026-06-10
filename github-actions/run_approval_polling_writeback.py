@@ -33,11 +33,14 @@ def run_writeback(payload):
         "goal_id": payload.get("goal_payload", {}).get("goal_id", ""),
         "task_record": sync_result.get("task_record", {}),
         "goal_record": sync_result.get("goal_record", {}),
+        "monitor_record": sync_result.get("monitor_record", {}),
         "task_writeback_status": sync_result.get("task_writeback_status", ""),
         "goal_writeback_status": sync_result.get("goal_writeback_status", ""),
+        "monitor_writeback_status": sync_result.get("monitor_writeback_status", ""),
         "writeback_receipts": {
             "task": sync_result.get("task_writeback_receipt", {}),
             "goal": sync_result.get("goal_writeback_receipt", {}),
+            "monitor": sync_result.get("monitor_writeback_receipt", {}),
         },
         "error": sync_result.get("error", ""),
     }

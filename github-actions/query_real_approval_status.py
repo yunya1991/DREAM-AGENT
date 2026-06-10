@@ -26,14 +26,25 @@ def build_status_result(instance, decision_id, instance_code):
 
 def main():
     payload = json.load(sys.stdin)
+    instance_code = payload.get("approval_instance_code", "")
+    if not instance_code:
+        result = {
+            "approval_status": "pending",
+            "automation_status": "paused",
+            "decision_summary": "approval_instance_code_missing",
+            "approval_instance_code": "",
+        }
+        json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
+        sys.stdout.write("\n")
+        return
     instance = APPROVAL_API.get_instance(
         payload.get("tenant_access_token", ""),
-        payload.get("approval_instance_code", ""),
+        instance_code,
     )
     result = build_status_result(
         instance=instance,
         decision_id=payload.get("decision_id", ""),
-        instance_code=payload.get("approval_instance_code", ""),
+        instance_code=instance_code,
     )
     json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")

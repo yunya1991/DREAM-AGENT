@@ -36,6 +36,17 @@ class MaterializeGithubSyncExecutionTests(unittest.TestCase):
                 "治理状态": "review_required",
                 "最近评论锚点": "https://github.com/yunya1991/DREAM-AGENT/pull/88#issuecomment-1",
             },
+            "protocol_checks": {
+                "preflight_checks": [
+                    "审批: https://feishu.cn/approval/instance-1",
+                    "DESIGN_REVIEW: https://feishu.cn/docx/design-review-1",
+                ],
+                "post_update_actions": [
+                    "模块任务表回写: status=in_progress",
+                    "目标推进表回写: goal_status=active",
+                    "监控表回写: workflow/run=run-1",
+                ],
+            },
             "risk_flags": [],
             "event_coverage_hit": {
                 "event_type": "github.pr.changed",
@@ -44,9 +55,9 @@ class MaterializeGithubSyncExecutionTests(unittest.TestCase):
             },
             "writeback_plan": [
                 "event_coverage_check",
-                "collab_state_writeback",
-                "automation_result_writeback",
-                "comment_anchor_writeback",
+                "task_table_writeback",
+                "goal_table_writeback",
+                "monitor_table_writeback",
                 "verification_snapshot",
             ],
             "requires_confirmation": True,
@@ -59,13 +70,16 @@ class MaterializeGithubSyncExecutionTests(unittest.TestCase):
             result["writeback_order"],
             [
                 "event_coverage_check",
-                "collab_state_writeback",
-                "automation_result_writeback",
-                "comment_anchor_writeback",
+                "task_table_writeback",
+                "goal_table_writeback",
+                "monitor_table_writeback",
                 "verification_snapshot",
             ],
         )
         self.assertEqual(result["status"], "confirmed")
+        self.assertIn("前置检查:", result["comment_templates"]["started"])
+        self.assertIn("后置更新:", result["comment_templates"]["started"])
+        self.assertIn("[单次总结 / SUMMARY]", result["comment_templates"]["summary"])
         self.assertEqual(result["knowledge_update"]["asset_type"], "delivery")
         self.assertEqual(result["handoff"]["type"], "stage_handoff")
 

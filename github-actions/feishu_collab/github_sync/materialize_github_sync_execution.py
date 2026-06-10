@@ -4,11 +4,39 @@ import sys
 
 WRITEBACK_ORDER = [
     "event_coverage_check",
-    "collab_state_writeback",
-    "automation_result_writeback",
-    "comment_anchor_writeback",
+    "task_table_writeback",
+    "goal_table_writeback",
+    "monitor_table_writeback",
     "verification_snapshot",
 ]
+
+
+def render_protocol_comment(header, preview, include_execution):
+    protocol_checks = preview.get("protocol_checks", {})
+    preflight = protocol_checks.get("preflight_checks", [])
+    post_updates = protocol_checks.get("post_update_actions", [])
+    event_summary = preview.get("event_summary", {})
+    lines = [
+        header,
+        "",
+        f"Agent: {preview.get('event_summary', {}).get('repo', 'automation-executor')}",
+        "前置检查:",
+    ]
+    lines.extend(f"- {item}" for item in preflight)
+    if include_execution:
+        lines.extend(
+            [
+                "",
+                "执行内容:",
+                f"- 同步 {event_summary.get('repo', '')} #{event_summary.get('number', '')} / {event_summary.get('action', '')}",
+                "",
+                "Test: github-sync-preview",
+                f"Result: {preview.get('event_coverage_hit', {}).get('fallback_policy', 'confirmed')}",
+            ]
+        )
+    lines.extend(["", "后置更新:"])
+    lines.extend(f"- {item}" for item in post_updates)
+    return "\n".join(lines).strip()
 
 
 def materialize_github_sync_execution(preview):
@@ -27,6 +55,10 @@ def materialize_github_sync_execution(preview):
         "status": status,
         "writeback_order": WRITEBACK_ORDER,
         "collab_state": {"fields": preview["field_updates"]},
+        "comment_templates": {
+            "started": render_protocol_comment("[协作开工声明 / STARTED]", preview, False),
+            "summary": render_protocol_comment("[单次总结 / SUMMARY]", preview, True),
+        },
         "event_summary": preview["event_summary"],
         "verification_seed": {
             "coverage_hit": preview["event_coverage_hit"],

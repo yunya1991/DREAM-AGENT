@@ -1,8 +1,6 @@
 name: pr9-governance-agent
 
 on:
-  schedule:
-    - cron: "10 */4 * * *"
   workflow_dispatch: {}
 
 env:

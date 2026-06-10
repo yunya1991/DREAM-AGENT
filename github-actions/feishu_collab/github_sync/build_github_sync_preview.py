@@ -97,6 +97,25 @@ def _field_updates(normalized_event, collab_context):
     return field_updates
 
 
+def _protocol_checks(collab_context):
+    preflight_checks = collab_context.get("preflight_checks") or [
+        "审批: pending confirmation",
+        "DESIGN_REVIEW: pending confirmation",
+        f"OKR Objective: {collab_context.get('okr_objective_id', '') or 'missing'}",
+        f"Base Goal（goal_id）: {collab_context.get('goal_id', '') or 'missing'}",
+        f"Base Task（task_id）: {collab_context.get('task_id', '') or 'missing'}",
+    ]
+    post_updates = collab_context.get("post_update_actions") or [
+        "模块任务表回写: status/comment_anchor/next_action",
+        "目标推进表回写: goal_status/risk_level/next_milestone",
+        "监控表回写: automation_status/workflow_run/comment_anchor",
+    ]
+    return {
+        "preflight_checks": preflight_checks,
+        "post_update_actions": post_updates,
+    }
+
+
 def build_github_sync_preview(event_payload, collab_context):
     normalized_event = _normalize_event(event_payload)
     risk_flags = []
@@ -130,6 +149,7 @@ def build_github_sync_preview(event_payload, collab_context):
             }
         ],
         "field_updates": _field_updates(normalized_event, collab_context),
+        "protocol_checks": _protocol_checks(collab_context),
         "risk_flags": risk_flags,
         "event_coverage_hit": {
             "event_type": normalized_event["event_type"],
@@ -138,9 +158,9 @@ def build_github_sync_preview(event_payload, collab_context):
         },
         "writeback_plan": [
             "event_coverage_check",
-            "collab_state_writeback",
-            "automation_result_writeback",
-            "comment_anchor_writeback",
+            "task_table_writeback",
+            "goal_table_writeback",
+            "monitor_table_writeback",
             "verification_snapshot",
         ],
         "requires_confirmation": True,

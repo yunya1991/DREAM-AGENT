@@ -42,7 +42,8 @@ def sync_with_status_result(payload, status_result):
     task_updates = dict(payload["task_payload"])
     task_updates.setdefault("approval_decision_id", task_updates.get("task_id", ""))
     task_updates.update(status_result)
-    task_record = SYNC.build_feishu_record(task_updates)
+    task_record = SYNC.build_module_task_record(task_updates)
+    monitor_record = SYNC.build_monitor_record(task_updates)
     # The goal builder owns the payload shape; keep upstream fields intact here.
     goal_payload = payload["goal_payload"]
     goal_record = GOAL.build_goal_record(
@@ -62,10 +63,13 @@ def sync_with_status_result(payload, status_result):
             "task_updates": task_updates,
             "task_record": task_record,
             "goal_record": goal_record,
+            "monitor_record": monitor_record,
             "task_writeback_status": "failed",
             "goal_writeback_status": "skipped",
+            "monitor_writeback_status": "skipped",
             "task_writeback_receipt": {},
             "goal_writeback_receipt": {},
+            "monitor_writeback_receipt": {},
             "error": str(exc),
         }
 
@@ -81,21 +85,67 @@ def sync_with_status_result(payload, status_result):
             "task_updates": task_updates,
             "task_record": task_record,
             "goal_record": goal_record,
+            "monitor_record": monitor_record,
             "task_writeback_status": "success",
             "goal_writeback_status": "failed",
+            "monitor_writeback_status": "skipped",
             "task_writeback_receipt": task_receipt,
             "goal_writeback_receipt": {},
+            "monitor_writeback_receipt": {},
             "error": str(exc),
+        }
+
+    monitor_table_id = base_sync.get("monitor_table_id")
+    monitor_record_id = base_sync.get("monitor_record_id")
+    if monitor_table_id and monitor_record_id:
+        try:
+            monitor_receipt = upsert_base_record(
+                base_sync["base_token"],
+                monitor_table_id,
+                monitor_record_id,
+                monitor_record,
+            )
+        except Exception as exc:
+            return {
+                "task_updates": task_updates,
+                "task_record": task_record,
+                "goal_record": goal_record,
+                "monitor_record": monitor_record,
+                "task_writeback_status": "success",
+                "goal_writeback_status": "success",
+                "monitor_writeback_status": "failed",
+                "task_writeback_receipt": task_receipt,
+                "goal_writeback_receipt": goal_receipt,
+                "monitor_writeback_receipt": {},
+                "error": str(exc),
+            }
+        monitor_status = "success"
+    else:
+        return {
+            "task_updates": task_updates,
+            "task_record": task_record,
+            "goal_record": goal_record,
+            "monitor_record": monitor_record,
+            "task_writeback_status": "success",
+            "goal_writeback_status": "success",
+            "monitor_writeback_status": "failed",
+            "task_writeback_receipt": task_receipt,
+            "goal_writeback_receipt": goal_receipt,
+            "monitor_writeback_receipt": {},
+            "error": "monitor table sync config missing",
         }
 
     return {
         "task_updates": task_updates,
         "task_record": task_record,
         "goal_record": goal_record,
+        "monitor_record": monitor_record,
         "task_writeback_status": "success",
         "goal_writeback_status": "success",
+        "monitor_writeback_status": monitor_status,
         "task_writeback_receipt": task_receipt,
         "goal_writeback_receipt": goal_receipt,
+        "monitor_writeback_receipt": monitor_receipt,
     }
 
 

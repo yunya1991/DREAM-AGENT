@@ -33,6 +33,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
         mock_upsert.side_effect = [
             {"record_id": "rec_task_written"},
             {"record_id": "rec_goal_written"},
+            {"record_id": "rec_monitor_written"},
         ]
 
         result = POLL.poll_and_sync(
@@ -60,6 +61,8 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
                     "task_record_id": "rec_task",
                     "goal_table_id": "tbl_goal",
                     "goal_record_id": "rec_goal",
+                    "monitor_table_id": "tbl_monitor",
+                    "monitor_record_id": "rec_monitor",
                 },
             }
         )
@@ -67,13 +70,18 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
         self.assertEqual(result["task_updates"]["approval_status"], "approved")
         self.assertEqual(result["task_updates"]["automation_status"], "proceed")
         self.assertEqual(result["goal_record"]["goal_status"], "active")
-        self.assertEqual(mock_upsert.call_count, 2)
+        self.assertEqual(result["monitor_writeback_status"], "success")
+        self.assertEqual(mock_upsert.call_count, 3)
 
     @patch.object(POLL.APPROVAL_API, "get_instance")
     @patch.object(POLL, "upsert_base_record")
     def test_writeback_uses_feishu_monitor_fields(self, mock_upsert, mock_get_instance):
         mock_get_instance.return_value = {"status": "REJECTED"}
-        mock_upsert.side_effect = [{"record_id": "rec_task"}, {"record_id": "rec_goal"}]
+        mock_upsert.side_effect = [
+            {"record_id": "rec_task"},
+            {"record_id": "rec_goal"},
+            {"record_id": "rec_monitor"},
+        ]
 
         POLL.poll_and_sync(
             {
@@ -98,21 +106,30 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
                     "task_record_id": "rec_task",
                     "goal_table_id": "tbl_goal",
                     "goal_record_id": "rec_goal",
+                    "monitor_table_id": "tbl_monitor",
+                    "monitor_record_id": "rec_monitor",
                 },
             }
         )
 
         task_fields = mock_upsert.call_args_list[0].args[3]
-        self.assertEqual(task_fields["审批状态"], "rejected")
-        self.assertEqual(task_fields["自动化状态"], "blocked")
-        self.assertEqual(task_fields["审批决策ID"], "task-2")
-        self.assertEqual(task_fields["任务ID"], "task-2")
+        monitor_fields = mock_upsert.call_args_list[2].args[3]
+        self.assertEqual(task_fields["status"], "blocked")
+        self.assertEqual(task_fields["task_id"], "task-2")
+        self.assertEqual(monitor_fields["审批状态"], "rejected")
+        self.assertEqual(monitor_fields["自动化状态"], "blocked")
+        self.assertEqual(monitor_fields["审批决策ID"], "task-2")
+        self.assertEqual(monitor_fields["任务ID"], "task-2")
 
     @patch.object(POLL.APPROVAL_API, "get_instance")
     @patch.object(POLL, "upsert_base_record")
     def test_goal_writeback_contains_boss_view_fields(self, mock_upsert, mock_get_instance):
         mock_get_instance.return_value = {"status": "APPROVED"}
-        mock_upsert.side_effect = [{"record_id": "rec_task"}, {"record_id": "rec_goal"}]
+        mock_upsert.side_effect = [
+            {"record_id": "rec_task"},
+            {"record_id": "rec_goal"},
+            {"record_id": "rec_monitor"},
+        ]
         goal_payload = {
             "goal_id": "goal-3",
             "goal_name": "老板视图联动",
@@ -197,6 +214,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
 
         self.assertEqual(result["task_writeback_status"], "failed")
         self.assertEqual(result["goal_writeback_status"], "skipped")
+        self.assertEqual(result["monitor_writeback_status"], "skipped")
         self.assertEqual(mock_upsert.call_count, 1)
 
     @patch.object(POLL, "upsert_base_record")
@@ -237,7 +255,94 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
 
         self.assertEqual(result["task_writeback_status"], "success")
         self.assertEqual(result["goal_writeback_status"], "failed")
+        self.assertEqual(result["monitor_writeback_status"], "skipped")
         self.assertEqual(result["task_writeback_receipt"]["record_id"], "rec_task_written")
+
+    @patch.object(POLL, "upsert_base_record")
+    def test_monitor_writeback_failure_preserves_task_and_goal_receipts(self, mock_upsert):
+        mock_upsert.side_effect = [
+            {"record_id": "rec_task_written"},
+            {"record_id": "rec_goal_written"},
+            RuntimeError("monitor writeback failed"),
+        ]
+
+        result = POLL.sync_with_status_result(
+            payload={
+                "task_payload": {
+                    "task_id": "task-monitor-fail",
+                    "task_name": "Task Monitor Fail",
+                    "goal_id": "goal-monitor-fail",
+                },
+                "goal_payload": {
+                    "goal_id": "goal-monitor-fail",
+                    "goal_name": "Goal Monitor Fail",
+                    "goal_owner": "owner",
+                },
+                "sibling_tasks": [],
+                "base_sync": {
+                    "base_token": "app_base",
+                    "task_table_id": "tbl_task",
+                    "task_record_id": "rec_task",
+                    "goal_table_id": "tbl_goal",
+                    "goal_record_id": "rec_goal",
+                    "monitor_table_id": "tbl_monitor",
+                    "monitor_record_id": "rec_monitor",
+                },
+            },
+            status_result={
+                "approval_instance_code": "instance-monitor-fail",
+                "approval_status": "approved",
+                "automation_status": "proceed",
+                "decision_summary": "approved:task-monitor-fail",
+            },
+        )
+
+        self.assertEqual(result["task_writeback_status"], "success")
+        self.assertEqual(result["goal_writeback_status"], "success")
+        self.assertEqual(result["monitor_writeback_status"], "failed")
+        self.assertEqual(result["task_writeback_receipt"]["record_id"], "rec_task_written")
+        self.assertEqual(result["goal_writeback_receipt"]["record_id"], "rec_goal_written")
+
+    @patch.object(POLL, "upsert_base_record")
+    def test_missing_monitor_sync_config_fails_after_task_and_goal_writeback(self, mock_upsert):
+        mock_upsert.side_effect = [
+            {"record_id": "rec_task_written"},
+            {"record_id": "rec_goal_written"},
+        ]
+
+        result = POLL.sync_with_status_result(
+            payload={
+                "task_payload": {
+                    "task_id": "task-missing-monitor",
+                    "task_name": "Task Missing Monitor",
+                    "goal_id": "goal-missing-monitor",
+                },
+                "goal_payload": {
+                    "goal_id": "goal-missing-monitor",
+                    "goal_name": "Goal Missing Monitor",
+                    "goal_owner": "owner",
+                },
+                "sibling_tasks": [],
+                "base_sync": {
+                    "base_token": "app_base",
+                    "task_table_id": "tbl_task",
+                    "task_record_id": "rec_task",
+                    "goal_table_id": "tbl_goal",
+                    "goal_record_id": "rec_goal",
+                },
+            },
+            status_result={
+                "approval_instance_code": "instance-missing-monitor",
+                "approval_status": "approved",
+                "automation_status": "proceed",
+                "decision_summary": "approved:task-missing-monitor",
+            },
+        )
+
+        self.assertEqual(result["task_writeback_status"], "success")
+        self.assertEqual(result["goal_writeback_status"], "success")
+        self.assertEqual(result["monitor_writeback_status"], "failed")
+        self.assertEqual(result["error"], "monitor table sync config missing")
 
 
 if __name__ == "__main__":

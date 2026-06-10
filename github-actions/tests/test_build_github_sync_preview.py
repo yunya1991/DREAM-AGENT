@@ -21,14 +21,38 @@ class BuildGithubSyncPreviewTests(unittest.TestCase):
 
     def test_preview_builds_pr_event_summary_and_field_updates(self):
         module = self.load_module()
+        context = self.load_fixture("collab_context.json")
+        context["preflight_checks"] = [
+            "审批: https://feishu.cn/approval/instance-1",
+            "DESIGN_REVIEW: https://feishu.cn/docx/design-review-1",
+        ]
+        context["post_update_actions"] = [
+            "模块任务表回写: status=in_progress",
+            "目标推进表回写: goal_status=active",
+            "监控表回写: workflow/run=run-1",
+        ]
         preview = module.build_github_sync_preview(
             event_payload=self.load_fixture("pr_event.json"),
-            collab_context=self.load_fixture("collab_context.json"),
+            collab_context=context,
         )
         self.assertEqual(preview["event_summary"]["event_type"], "github.pr.changed")
         self.assertEqual(preview["event_summary"]["repo"], "yunya1991/DREAM-AGENT")
         self.assertEqual(preview["field_updates"]["平台状态"], "checks_pending")
         self.assertEqual(preview["field_updates"]["自动化状态"], "running")
+        self.assertEqual(
+            preview["protocol_checks"]["preflight_checks"][0],
+            "审批: https://feishu.cn/approval/instance-1",
+        )
+        self.assertEqual(
+            preview["writeback_plan"],
+            [
+                "event_coverage_check",
+                "task_table_writeback",
+                "goal_table_writeback",
+                "monitor_table_writeback",
+                "verification_snapshot",
+            ],
+        )
         self.assertEqual(preview["event_coverage_hit"]["action"], "synchronize")
         self.assertEqual(preview["requires_confirmation"], True)
 
