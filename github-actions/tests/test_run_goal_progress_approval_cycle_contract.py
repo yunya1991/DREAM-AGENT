@@ -20,8 +20,7 @@ class RunGoalProgressApprovalCycleContractTests(unittest.TestCase):
             task_payload={"task_id": "task-approval-001"},
             gate_result={"trigger_reason": "high_risk_scope:release_handoff"},
         )
-        self.assertEqual(result[0]["value"], "task-approval-001")
-        self.assertEqual(result[1]["value"], "high_risk_scope:release_handoff")
+        self.assertEqual(result, [])
 
 
 if __name__ == "__main__":

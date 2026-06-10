@@ -43,14 +43,10 @@ def extract_instance_code(payload):
 
 
 def build_approval_form(task_payload, gate_result):
-    return [
-        {"id": "decision_id", "type": "textarea", "value": task_payload.get("task_id", "")},
-        {
-            "id": "trigger_reason",
-            "type": "textarea",
-            "value": gate_result.get("trigger_reason", ""),
-        },
-    ]
+    explicit = task_payload.get("approval_form")
+    if isinstance(explicit, list):
+        return explicit
+    return []
 
 
 def is_approval_timed_out(task_payload):
