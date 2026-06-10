@@ -31,18 +31,23 @@ class RunApprovalPollingWritebackTests(unittest.TestCase):
         module = self.load_module()
         with patch.object(module.POLL, "sync_with_status_result") as mock_sync:
             mock_sync.return_value = {
-                "task_record": {"任务ID": "TASK-1"},
+                "task_record": {"task_id": "TASK-1"},
                 "goal_record": {"goal_id": "GOAL-1"},
+                "monitor_record": {"任务ID": "TASK-1"},
                 "task_writeback_status": "success",
                 "goal_writeback_status": "success",
+                "monitor_writeback_status": "success",
                 "task_writeback_receipt": {"record_id": "rec_task"},
                 "goal_writeback_receipt": {"record_id": "rec_goal"},
+                "monitor_writeback_receipt": {"record_id": "rec_monitor"},
             }
             result = module.run_writeback(self.sample_payload())
         self.assertEqual(result["task_id"], "TASK-1")
         self.assertEqual(result["goal_id"], "GOAL-1")
         self.assertEqual(result["task_writeback_status"], "success")
         self.assertEqual(result["goal_writeback_status"], "success")
+        self.assertEqual(result["monitor_writeback_status"], "success")
+        self.assertEqual(result["writeback_receipts"]["monitor"]["record_id"], "rec_monitor")
         self.assertEqual(result["writeback_receipts"]["task"]["record_id"], "rec_task")
 
 

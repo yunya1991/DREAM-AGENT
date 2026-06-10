@@ -10,6 +10,29 @@ MODULE = importlib.util.module_from_spec(SPEC)
 
 
 class SyncGithubToFeishuTests(unittest.TestCase):
+    def test_build_module_task_record_maps_runtime_fields_to_module_task_table(self):
+        SPEC.loader.exec_module(MODULE)
+        record = MODULE.build_module_task_record(
+            {
+                "task_id": "task-ui-map-real-data-mvt-001",
+                "task_name": "MVT-1",
+                "goal_id": "goal-ui-map-real-data-20260610",
+                "repo": "yunya1991/Dreambuddy-V2",
+                "pr_number": "12",
+                "pr_url": "https://github.com/yunya1991/Dreambuddy-V2/pull/12",
+                "last_comment_anchor": "https://github.com/yunya1991/Dreambuddy-V2/pull/12#issuecomment-1",
+                "next_action": "继续补齐 real data override",
+                "owner_agent": "SOLO",
+                "automation_status": "running",
+            }
+        )
+        self.assertEqual(record["task_id"], "task-ui-map-real-data-mvt-001")
+        self.assertEqual(record["goal_id"], "goal-ui-map-real-data-20260610")
+        self.assertEqual(record["status"], "in_progress")
+        self.assertEqual(record["pr_number"], "12")
+        self.assertEqual(record["comment_anchor"], "https://github.com/yunya1991/Dreambuddy-V2/pull/12#issuecomment-1")
+        self.assertEqual(record["owner_agent"], "SOLO")
+
     def test_build_feishu_record_maps_all_four_status_layers(self):
         SPEC.loader.exec_module(MODULE)
         record = MODULE.build_feishu_record(

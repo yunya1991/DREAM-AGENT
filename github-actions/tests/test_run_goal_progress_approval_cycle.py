@@ -93,7 +93,7 @@ class RunGoalProgressApprovalCycleTests(unittest.TestCase):
             )
 
         self.assertEqual(result["task_updates"]["approval_status"], "approved")
-        self.assertEqual(result["task_updates"]["automation_status"], "running")
+        self.assertEqual(result["task_updates"]["automation_status"], "proceed")
         self.assertEqual(result["task_updates"]["decision_summary"], "approved:task-risk-001")
         self.assertEqual(result["goal_record"]["goal_status"], "active")
 

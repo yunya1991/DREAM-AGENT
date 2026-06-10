@@ -1,8 +1,6 @@
 name: pr9-developer-agent
 
 on:
-  schedule:
-    - cron: "20 * * * *"
   workflow_dispatch: {}
 
 env:
