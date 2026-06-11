@@ -21,7 +21,7 @@ class RenderApprovalPollingWritebackSummaryTests(unittest.TestCase):
         return {
             "approval_instance_code": "ins_123",
             "approval_status": "approved",
-            "automation_status": "proceed",
+            "automation_status": "running",
             "decision_summary": "approved:TASK-1",
         }
 
@@ -42,7 +42,7 @@ class RenderApprovalPollingWritebackSummaryTests(unittest.TestCase):
         summary = module.build_summary_markdown(self.sample_status(), self.sample_writeback())
         self.assertIn("ins_123", summary)
         self.assertIn("approved", summary)
-        self.assertIn("proceed", summary)
+        self.assertIn("running", summary)
         self.assertIn("TASK-1", summary)
         self.assertIn("success", summary)
 

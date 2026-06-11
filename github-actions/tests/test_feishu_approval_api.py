@@ -57,7 +57,7 @@ class FeishuApprovalApiTests(unittest.TestCase):
         pending = MODULE.resolve_instance_status({"status": "PENDING"}, decision_id="decision-003")
 
         self.assertEqual(approved["approval_status"], "approved")
-        self.assertEqual(approved["automation_status"], "proceed")
+        self.assertEqual(approved["automation_status"], "running")
         self.assertEqual(approved["decision_summary"], "approved:decision-001")
 
         self.assertEqual(rejected["approval_status"], "rejected")

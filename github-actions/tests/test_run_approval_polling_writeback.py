@@ -22,7 +22,7 @@ class RunApprovalPollingWritebackTests(unittest.TestCase):
             "status_result": {
                 "approval_instance_code": "ins_123",
                 "approval_status": "approved",
-                "automation_status": "proceed",
+                "automation_status": "running",
                 "decision_summary": "approved:TASK-1",
             },
         }

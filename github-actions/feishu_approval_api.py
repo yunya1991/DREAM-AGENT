@@ -51,7 +51,7 @@ def resolve_instance_status(instance, decision_id):
     if status == "APPROVED":
         return {
             "approval_status": "approved",
-            "automation_status": "proceed",
+            "automation_status": "running",
             "decision_summary": f"approved:{decision_id}",
         }
     if status == "REJECTED":
@@ -63,7 +63,7 @@ def resolve_instance_status(instance, decision_id):
     if status == "NOT_REQUIRED":
         return {
             "approval_status": "not_required",
-            "automation_status": "proceed",
+            "automation_status": "running",
             "decision_summary": f"not_required:{decision_id}",
         }
     return {

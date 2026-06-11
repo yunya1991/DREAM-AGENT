@@ -65,7 +65,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
         )
 
         self.assertEqual(result["task_updates"]["approval_status"], "approved")
-        self.assertEqual(result["task_updates"]["automation_status"], "proceed")
+        self.assertEqual(result["task_updates"]["automation_status"], "running")
         self.assertEqual(result["goal_record"]["goal_status"], "active")
         self.assertEqual(mock_upsert.call_count, 2)
 
@@ -190,7 +190,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
             status_result={
                 "approval_instance_code": "instance-fail",
                 "approval_status": "approved",
-                "automation_status": "proceed",
+                "automation_status": "running",
                 "decision_summary": "approved:task-fail",
             },
         )
@@ -230,7 +230,7 @@ class PollFeishuApprovalSyncBaseTest(unittest.TestCase):
             status_result={
                 "approval_instance_code": "instance-goal-fail",
                 "approval_status": "approved",
-                "automation_status": "proceed",
+                "automation_status": "running",
                 "decision_summary": "approved:task-goal-fail",
             },
         )

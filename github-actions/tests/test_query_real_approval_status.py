@@ -23,7 +23,7 @@ class QueryRealApprovalStatusTests(unittest.TestCase):
         )
         self.assertEqual(result["approval_instance_code"], "ins_123")
         self.assertEqual(result["approval_status"], "approved")
-        self.assertEqual(result["automation_status"], "proceed")
+        self.assertEqual(result["automation_status"], "running")
         self.assertEqual(result["decision_summary"], "approved:TASK-1")
 
 
