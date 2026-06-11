@@ -12,8 +12,7 @@
   "version": 1,
   "generated_at": "2026-05-19T00:10:00.000Z",
   "open_tasks": [
-    "task-connectivity-gap-trading-hub-001",
-    "task-strategy-mainline-ticket-001"
+    "task-connectivity-gap-trading-hub-001"
   ],
   "tasks": [
     {
@@ -1756,7 +1755,7 @@
       "source_type": "assigned",
       "task_type": "serial",
       "mode": "STANDARD",
-      "status": "open",
+      "status": "claimed",
       "depends_on": [],
       "dependency_gate": "planned",
       "shared_boundary": [
@@ -1767,15 +1766,15 @@
         "docs/superpowers/specs/2026-06-07-dream-agent-hybrid-unit-dispatch-design.md"
       ],
       "current_sync_state": "none",
-      "owner_agent": "",
+      "owner_agent": "Governance AGENT",
       "validator_agent": "Validator AGENT",
       "governance_agent": "Governance AGENT",
       "workspace_path": "DREAM-AGENT",
       "unit_id": "unit-strategy-task-ticket-001",
       "feishu_asset_mode": "degraded-with-backfill",
       "version_anchor": {
-        "git_commit_before": "",
-        "git_branch_or_pr_ref": "",
+        "git_commit_before": "2192b16",
+        "git_branch_or_pr_ref": "agent/governance/hybrid-unit-dispatch-001",
         "workflow_run_id": "",
         "acceptance_request_id": "",
         "feishu_asset_before_snapshot": ""
@@ -1788,10 +1787,11 @@
         ],
         "owner": "Governance AGENT"
       },
-      "next_required_action": "governance: dispatch hybrid unit and post STARTED"
+      "next_required_action": "developer: claim task, post STARTED, implement hybrid unit",
+      "claim_pointer": "https://github.com/yunya1991/dreambuddy-v1/pull/example"
     }
   ],
-  "last_updated": "2026-05-19T00:00:00.000Z",
+  "last_updated": "2026-06-11T07:09:26.238320Z",
   "ledger_agent_sync": "2026-05-19T00:00:00.000Z",
   "summary": "ledgered:39 | open:1"
 }
